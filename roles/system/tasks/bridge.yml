@@ -1,0 +1,91 @@
+---
+
+   - debug:
+       msg: "Bridging tasks"
+
+
+   - name: Define the Bridge Interface via bridge-br0.netdev file
+     copy:
+       src: "{{ root_playbook_dir }}/etc/systemd/network/bridge-br0.netdev"
+       dest: /etc/systemd/network/bridge-br0.netdev
+       owner: root
+       group: root
+       mode: 0755
+
+   - name: Define eth0 as the bridge's interface via br0-member-eth0.network file
+     copy:
+       src: "{{ root_playbook_dir }}/etc/systemd/network/br0-member-eth0.network"
+       dest: /etc/systemd/network/br0-member-eth0.network
+       owner: root
+       group: root
+       mode: 0755
+
+   - name: Configure the bridge interface to use DHCP via the 20-wired.network 
+     copy:
+       src: "{{ root_playbook_dir }}/etc/systemd/network/20-wired.network"
+       dest: /etc/systemd/network/20-wired.network
+       owner: root
+       group: root
+       mode: 0755
+
+   - name: discover if HostAPD.conf has bridge=br0 is in there
+     shell: cat /etc/hostapd/WifiRepeaterHostAPD.conf
+     register: HostAPDConf
+
+
+   - name: edit hostapd config to use the br0 bridge.
+        #bridge=br0 #Note that this is the solution to turning bridging the wifi network to our existing ethernet network.
+     lineinfile:
+       path: /etc/hostapd/WifiRepeaterHostAPD.conf
+       line: 'bridge=br0' 
+       #Note that this is the solution to bridging the wifi network to our existing ethernet network.'
+       insertbefore: EOF
+     when: HostAPDConf.stdout.find('bridge=br0') ==-1
+     #when: "'bridge=br0' not in lookup('file', '/etc/hostapd/WifiRepeaterHostAPD.conf')"
+
+#   - name: Copy /etc/dhcpcd.conf file #Likely needs updates if I change interfaces
+#     copy:
+#       src: "{{ root_playbook_dir }}/etc/dhcpcd_bridging.conf"
+#       dest: /etc/dhcpcd.conf
+#       owner: root
+#       group: netdev
+#       mode: 0664
+#     tags: os_config_files
+
+
+#   - name: discover if dhcpcd_bridging.conf has bdenyinterfaces wlan1 eth0 wlan0 in there
+#     shell: cat /etc/dhcpcd_bridging.conf
+#     register: dhcpcd
+
+#   - name: edit dhcpcd.conf file to reject dhcp management on wlan1, eth0 and wlan0 interfaces
+#     # network interfaces that are members of a bridge device are never assigned an IP address
+     # since they communicate via the bridge.  The bridge device itself needs an IP address
+     # so that we can reach the pi on the network  dhcpcd automatically requests an IP for every active
+     # interface.   So we need to block eth0 and wlan1 interfaces from being processed and let
+     # dhcpcd configure only br0 via dhcp.
+#     lineinfile:
+#       path: /etc/dhcpcd_bridging.conf
+#       line: 'denyinterfaces wlan1 eth0 wlan0'
+       #Note that this is the solution to bridging the wifi network to our existing ethernet network.'
+#       insertbefore: EOF
+#     when: dhcpcd.stdout.find('denyinterfaces wlan1 eth0 wlan0') == -1
+
+#/etc/systemd/network/bridge-br0.netdev
+
+
+#   - name: edit dhcpcd.conf file to enable the br0 bridge
+#     # by adding interface br0 to this file, we're ensuring
+#     # that our bridge interface (hosted on eth0) can get it's ip address from the dhcp server
+#     lineinfile:
+#       path: /etc/dhcpcd.conf
+#       line: 'interface br0 #Note that this is the solution to bridging the wifi network to our existing ethernet network.'
+#       insertbefore: EOF
+#     when: "'interface br0' not in lookup('file', '/etc/dhcpcd.conf')"
+
+   - name: ensure wifi radio is not blocked
+     # on the pi, 5 ghz networking is diabled unitil a country code has been configured by the 
+     # user.  We do this to ensure wifi is not blocked on the pi
+     command: rfkill unblock wlan
+  
+   - name: Enable systemd-networkd
+     command: systemctl enable systemd-networkd

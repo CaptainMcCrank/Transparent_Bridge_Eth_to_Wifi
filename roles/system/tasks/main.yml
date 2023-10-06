@@ -1,0 +1,11 @@
+---
+- import_tasks: essential.yml
+- import_tasks: AWUS036ACH_wifi_adapter.yml
+  when: wifi_interface == "wlan1"
+- import_tasks: hostapd.yml
+- import_tasks: inkywhat.yml
+- import_tasks: lighttpd.yml
+- import_tasks: avahi.yml 
+- import_tasks: webservercontent.yml
+- import_tasks: bridge.yml
+- import_tasks: final_cleanup.yml

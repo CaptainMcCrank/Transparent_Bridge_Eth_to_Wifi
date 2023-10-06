@@ -1,0 +1,53 @@
+/*@import url(http://fonts.googleapis.com/css?family=Libre Franklin:200,400,600);*/
+/* libre-franklin-300 - latin */
+@font-face {
+  font-family: 'Libre Franklin';
+  font-style: normal;
+  font-weight: 300;
+  src: local(''),
+       url('assets/webfonts/libre-franklin-v7-latin-300.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
+       url('assets/webfonts/libre-franklin-v7-latin-300.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+}
+/* libre-franklin-200 - latin */
+@font-face {
+  font-family: 'Libre Franklin';
+  font-style: normal;
+  font-weight: 200;
+  src: local(''),
+       url('assets/webfonts/libre-franklin-v7-latin-200.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
+       url('assets/webfonts/libre-franklin-v7-latin-200.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+}
+/* libre-franklin-regular - latin */
+@font-face {
+  font-family: 'Libre Franklin';
+  font-style: normal;
+  font-weight: 400;
+  src: local(''),
+       url('assets/webfonts/libre-franklin-v7-latin-regular.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
+       url('assets/webfonts/libre-franklin-v7-latin-regular.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+}
+/* libre-franklin-600 - latin */
+@font-face {
+  font-family: 'Libre Franklin';
+  font-style: normal;
+  font-weight: 600;
+  src: local(''),
+       url('assets/webfonts/libre-franklin-v7-latin-600.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
+       url('assets/webfonts/libre-franklin-v7-latin-600.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+}
+
+body, html { background: #615f5f; margin:0; }
+html { font: 14px/1.4 Libre Franklin, 'Helvetica Neue', Helvetica, sans-serif; color: #ddd; font-weight: 400; background-image: url(Logo.png) }
+
+h2 { font-weight: 200; font-size: 45px; margin: 20px 35px; }
+
+div.list { background: #111; padding: 20px 35px; }
+div.foot { color: #777; margin-top: 15px; padding: 20px 35px }
+pre.readme {color: #0099FF; padding: 20px 35px; }
+
+td { line-height: 21px; }
+tr:hover { background: black; }
+
+a { color: #32C6FF; }
+a:visited { color: #BD32FF; }
+a:hover { color: #B8EBFF; }

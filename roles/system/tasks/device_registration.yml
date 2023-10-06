@@ -1,0 +1,148 @@
+---
+   - debug:
+       msg: "Device Registration tasks"
+
+   - name: Copy device registration scripts 
+     synchronize:
+       src: "{{ root_playbook_dir }}/bin/register.sh"
+       dest: /bin/.
+     tags: DeviceRegistration
+
+   - name: Copy systemd timers & services files for device registration
+     become_user: pi
+     copy:
+       src: "{{ root_playbook_dir }}/pi/config/systemd"
+       dest: /home/pi/.config/
+       mode: 0700
+       owner: pi
+     tags: 
+     - DeviceRegistration
+
+   - name: enable device registration service so it launches after reboot
+     become_user: pi
+     command: systemctl --user enable register-device.service # no now switch because I don't want to run it
+     tags: DeviceRegistration
+
+   - name: enable device registration timer so it launches after reboot
+     become_user: pi
+     command: systemctl --user enable register-device.timer
+     tags: DeviceRegistration
+
+   - name: Copy /usr/local/etc/ files over to target *currently this is the hotspot version file*
+     ansible.builtin.copy:
+       src: "{{ root_playbook_dir }}/usr/local/etc/device.ver"
+       dest: /boot/device.ver
+     tags: 
+     - os_config_files
+     - DeviceRegistration
+
+   - name: Increment /boot/device.ver contents to reflect build version
+     lineinfile:
+       path: /boot/device.ver
+       regexp: '^Ver:.*'
+       line: "Ver: {{ version['Ver'] }}"
+     tags: 
+     - os_config_files
+     - DeviceRegistration
+
+   - name: Increment /boot/device.ver contents to reflect build Author
+     lineinfile:
+       path: /boot/device.ver
+       regexp: '^Author:.*'
+       line: "Author: {{ version['Author'] }}"
+     tags: 
+     - os_config_files
+     - DeviceRegistration
+
+   - name: Increment /boot/device.ver contents to reflect build date
+     lineinfile:
+       path: /boot/device.ver
+       regexp: '^BuildDate:.*'
+       line: "BuildDate: {{ version['BuildDate'] }}"
+     tags: 
+     - os_config_files
+     - DeviceRegistration
+
+   - name: Increment /boot/device.ver contents to reflect build Name
+     lineinfile:
+       path: /boot/device.ver
+       insertbefore: </body>
+       line: "Build: {{ version['Build'] }}"
+     tags: 
+     - os_config_files
+     - DeviceRegistration
+ 
+
+   - name: Copy /usr/local/etc/ files over to target
+     ansible.builtin.copy:
+       src: "{{ root_playbook_dir }}/usr/local/etc/device.ver"
+       dest: /boot/device.ver
+     tags: 
+     - os_config_files
+     - DeviceRegistration
+
+   - name: Increment /boot/device.ver contents to reflect build version
+     lineinfile:
+       path: /boot/device.ver
+       regexp: '^Ver:.*'
+       line: "Ver: {{ version['Ver'] }}"
+     tags: 
+     - os_config_files
+     - DeviceRegistration
+
+   - name: Increment /boot/device.ver contents to reflect build Author
+     lineinfile:
+       path: /boot/device.ver
+       regexp: '^Author:.*'
+       line: "Author: {{ version['Author'] }}"
+     tags: 
+     - os_config_files
+     - DeviceRegistration
+
+   - name: Increment /boot/device.ver contents to reflect build date
+     lineinfile:
+       path: /boot/device.ver
+       regexp: '^BuildDate:.*'
+       line: "BuildDate: {{ version['BuildDate'] }}"
+     tags: 
+     - os_config_files
+     - DeviceRegistration
+     
+   - name: Set the firmware description in the /boot/device.ver file
+     ansible.builtin.lineinfile:
+       path: /boot/device.ver
+       line: "Description: {{ version['Description'] }}"
+       create: yes 
+     tags:
+     - os_config_files 
+     - DeviceRegistration
+     - InkyWhat
+
+   - name: Increment /var/www/html/index.html contents to reflect build version
+     lineinfile:
+       path: /var/www/html/index.html
+       regexp: '<li>Build Version: 0.0</a></li>'
+       line: "<li>Build Version: {{ version['Ver'] }}</a></li>"
+     tags: 
+     - os_config_files
+     - DeviceRegistration
+
+   - name: Increment /var/www/html/index.html contents to reflect build Name
+     lineinfile:
+       path: /var/www/html/index.html
+       regexp: '<li>Build Name: 0.0</a></li>'
+       line: "<li>Build Name: {{ version['Build'] }}</a></li>"
+     tags: 
+     - os_config_files
+     - DeviceRegistration
+
+   - name: Increment /var/www/html/index.html contents to reflect build Date
+     lineinfile:
+       path: /var/www/html/index.html
+       regexp: '<li>Build Date: 0.0</a></li>'
+       line: "<li>Build Date: {{ version['BuildDate'] }}</a></li>"
+     tags: 
+     - os_config_files
+     - DeviceRegistration
+
+

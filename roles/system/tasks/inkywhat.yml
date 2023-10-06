@@ -1,0 +1,104 @@
+---
+   - debug:
+       msg: "Inkywhat tasks"
+
+   - name: Create /etc/systemd/system/Device_Label_WP.service file 
+     copy:
+       src: "{{ root_playbook_dir }}/etc/systemd/system/Device_Label_WP.service"
+       dest: /etc/systemd/system/Device_Label_WP.service
+       owner: root
+       group: root
+       mode: 0744
+     tags: 
+     - os_config
+     - inkywhat
+
+   - name: Create /etc/systemd/system/Device_Label_WP.timer file 
+     copy:
+       src: "{{ root_playbook_dir }}/etc/systemd/system/Device_Label_WP.timer"
+       dest: /etc/systemd/system/Device_Label_WP.timer
+       owner: root
+       group: root
+       mode: 0744
+     tags: 
+     - os_config
+     - inkywhat  
+
+   - name: Synchronization of files for inkywhat script
+     ansible.builtin.copy: 
+       src: "{{ root_playbook_dir }}/usr/local/bin/"
+       dest: /usr/local/bin/
+       owner: root
+       group: root
+       mode: 0744
+     tags:
+     - os_config_files
+     - AnsibleHousekeeping
+     - InkyWhat
+
+   - name: pip install inky libraries for whitepaper display
+     pip:
+       executable: pip3
+       name: inky[rpi, example-depends]
+     tags: 
+     - EthernetWebServer
+     - inkywhat
+
+   - name: pip install netifaces for whitepaper display
+     pip:
+       executable: pip3
+       name: netifaces
+     tags: 
+     - EthernetWebServer
+     - inkywhat
+
+   - name: Download pimoroni
+     ansible.builtin.get_url:
+       url: https://get.pimoroni.com/inky
+       dest: /tmp/pimoroni.sh
+       mode: '0755'
+
+   - name: Install python3-qrcode
+     apt:
+       name: python3-qrcode
+       state: present
+       update_cache: true
+     tags: 
+     - InkyWhat
+
+   - name: Install python3-icalendar
+     apt:
+       name: python3-icalendar
+       state: present
+       update_cache: true
+
+
+   - name: pip install python3-fonts libraries for whitepaper display
+     pip:
+       executable: pip3
+       name: fonttools
+
+   - name: enable inkywhat service that reports device state
+     command: systemctl enable Device_Label_WP.service
+     tags:
+       - nftables
+       - inkywhat
+
+   - name: enable inkywhat timer that reports device state
+     command: systemctl enable Device_Label_WP.timer
+     tags:
+       - nftables
+       - inkywhat
+
+   - name: PiMoroni for whitepaper display
+     ansible.builtin.expect:
+       command: /tmp/pimoroni.sh || /bin/true
+       timeout: 650
+       responses:
+         (?i)Do you wish to continue? : "y"
+         (?i)Do you wish to perform a full install? : "y"
+     become_user: pi
+     ignore_errors: true
+     tags: 
+     - os_config_files
+     - inkywhat

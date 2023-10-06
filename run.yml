@@ -1,0 +1,7 @@
+---
+ - hosts: ansibledest.local
+   become: yes
+   become_user: root
+   roles: 
+     - role: system
+   

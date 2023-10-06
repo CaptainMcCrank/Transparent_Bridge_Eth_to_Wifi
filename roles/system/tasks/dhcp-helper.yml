@@ -1,0 +1,42 @@
+---
+# https://manpages.debian.org/jessie/dhcp-helper/dhcp-helper.8.en.html
+# dhcp-helper is a DHCP and BOOTP relay agent. 
+# It listens for DHCP and BOOTP broadcasts on directly connected subnets and 
+# relays them to DHCP or BOOTP servers elsewhere. It also relays replies from 
+# the remote servers back to partially configured hosts. Once hosts are fully 
+# configured they can communicate directly with their servers and no longer need 
+# the services of a relay. 
+
+   - name: Install dhcp-helper
+     apt:
+       name: dhcp-helper
+       state: present
+       update_cache: true
+
+   - name: Copy /etc/default/dhcp-helper.conf file 
+     copy:
+       src: "{{ root_playbook_dir }}/etc/default/dhcp-helper"
+       dest: /etc/default/dhcp-helper
+       owner: root
+       group: netdev
+       mode: 0664
+
+   - name: enable dhcp-helper
+     command: systemctl enable dhcp-helper  
+
+   - name: Create /etc/systemd/system/Device_Label_WP.service file 
+     copy:
+       src: "{{ root_playbook_dir }}/etc/systemd/system/Device_Label_WP.service"
+       dest: /etc/systemd/system/Device_Label_WP.service
+       owner: root
+       group: root
+       mode: 0744
+     tags: 
+     - os_config
+     - inkywhat
+
+   - name: start the dhcp-helper
+     command: systemctl start dhcp-helper 
+     tags: 
+       - FW_Wifi_Eth_Br
+       - bridging

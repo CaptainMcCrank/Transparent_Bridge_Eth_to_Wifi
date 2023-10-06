@@ -1,0 +1,340 @@
+---
+   - debug:
+       msg: "Target setup tasks"
+
+   - name: get content of remote file
+     slurp:
+       src: "{{os_info_path}}"
+     register: remote_content_encoded
+
+   - name: decode remote content
+     set_fact:
+       remote_os_info: "{{remote_content_encoded.content | b64decode}}"
+
+   - debug:
+       msg: "content of remote file {{os_info_path}}: {{remote_os_info}}"
+
+#   - name: deactivate wlan1 if its on
+#     command: ip link set wlan1 down
+#     when: int_count != '3'
+#     tags: AnsibleHousekeeping 
+
+   - name: disable ipv6
+     command: sysctl -w net.ipv6.conf.all.disable_ipv6=1
+     tags: 
+     - os_config_files
+     - streamer
+
+   - name: wipe /var/cache/apt/* 
+     file:
+       path: /var/cache/apt/
+     tags: AnsibleHousekeeping 
+  
+#   - name: disable powersave mode on wlan0 (Reduces possibility of intermittent connectivity loss due to powersaving)
+#     command: iwconfig wlan0 power off
+#     tags: AnsibleHousekeeping 
+
+   - name: Synchronization of files for apt client (configures target device to use builderhotspot's proxies.)
+     ansible.builtin.copy: 
+       src: "{{ root_playbook_dir }}/etc/apt"
+       dest: /tmp/
+
+#See https://forums.raspberrypi.com/viewtopic.php?t=298069 for context on the following commands: 
+
+   - name: Overwrite /etc/apt/sources.list to use builderhotspot's general apt-related proxies.
+     command: cp /tmp/apt/sources.list.pre /etc/apt/sources.list
+
+   - name: Overwrite /etc/apt/sources.list.d/raspi.list to use builderhotspot's raspbian-related proxies.
+     command: cp /tmp/apt/sources.list.d/raspi.list.pre /etc/apt/sources.list.d/raspi.list
+
+   - name: Modify the /etc/apt/sources.list.pre apt source if the playbook host has DOCKER_HOST environmental variable
+     ansible.builtin.replace:
+       path: /etc/apt/sources.list
+       regexp: '(?:10.6.6.1)'
+       replace: "{{ docker_host }}"
+     when: "lookup('ansible.builtin.env', 'DOCKER_HOST') is defined"
+
+   - name: Modify the /etc/apt/sources.list.d/raspi.list apt source if the playbook host has DOCKER_HOST environmental variable
+     ansible.builtin.replace:
+       path: /etc/apt/sources.list.d/raspi.list
+       regexp: '(?:10.6.6.1)'
+       replace: "{{ docker_host }}"
+     when: "lookup('ansible.builtin.env', 'DOCKER_HOST') is defined"
+
+   - name: Run the equivilent of apt-get update
+     apt:
+       update_cache: yes 
+
+   - name: Update all packages (install the newest versions of all packages currently installed on the system from the sources enumerated in /etc/apt/sources.list on the target system)
+     apt:
+       upgrade: dist
+     tags: AnsibleHousekeeping 
+
+   - name: install dependencies for some things that I don't recall the motivation for
+     apt:
+       name: "{{item}}"
+       state: present
+       update_cache: yes
+     loop:
+         - apt-transport-https
+         - ca-certificates
+         - curl # device registration
+         - gnupg-agent
+         - software-properties-common
+     tags: 
+     - DeviceRegistration
+     - UnknownDependencies
+
+
+   - name: Create FW_Wifi_Eth_Br's desktop background file
+     ansible.builtin.copy:
+       src: "{{ root_playbook_dir }}/pi/FW_Wifi_Eth_Br.local.png"  #normally use a jpeg.  don't cut and paste from here.
+       dest: /home/pi/Pictures/Desktop.PNG
+       owner: pi
+       group: pi
+       mode: 0644
+     tags: 
+     - FW_Wifi_Eth_Br
+     - os_config_files
+
+   - name: Copy LXDE-pi file that does not autostart chrome 
+     copy:
+       src: "{{ root_playbook_dir }}/pi/config/lxsession/LXDE-pi/autostart_ui_off"
+       dest: /etc/xdg/lxsession/.autostart_ui_off
+       owner: pi
+       group: pi
+       mode: 0644
+     tags: 
+     - FW_Wifi_Eth_Br
+
+   - name: set the new desktop background 
+     lineinfile:
+             # changed location in rasbpian buster.  Old location:
+             # path: /home/pi/.config/pcmanfm/LXDE-pi/desktop-items-0.conf
+       path: /etc/xdg/pcmanfm/LXDE-pi/desktop-items-0.conf
+       regexp: '(wallpaper=.+)'
+       line: 'wallpaper=/home/pi/Pictures/Desktop.PNG'
+     tags: 
+     - os_config_files
+     - FW_Wifi_Eth_Br
+     - desktop_settings
+
+   - name: tune the background to be black 
+     lineinfile:
+             # changed location in rasbpian buster.  Old location:
+             # path: /home/pi/.config/pcmanfm/LXDE-pi/desktop-items-0.conf
+       path: /etc/xdg/pcmanfm/LXDE-pi/desktop-items-0.conf
+       regexp: '(desktop_bg=.+)'
+       line: 'desktop_bg=#000000'
+     tags: 
+     - os_config_files
+     - FW_Wifi_Eth_Br
+     - desktop_settings     
+
+   - name: crop the wallpaper 
+     lineinfile:
+             # changed location in rasbpian buster.  Old location:
+             # path: /home/pi/.config/pcmanfm/LXDE-pi/desktop-items-0.conf
+       path: /etc/xdg/pcmanfm/LXDE-pi/desktop-items-0.conf
+       regexp: '(wallpaper_mode=.+)'
+       line: 'wallpaper_mode=center'
+     tags: 
+     - os_config_files
+     - FW_Wifi_Eth_Br
+     - desktop_settings
+
+   - name: Create /home/pi/.config directory
+     file: path=/home/pi/.config state=directory mode=0755 owner=pi group=pi
+     tags: os_config_files
+
+
+   - name: Install gparted
+     apt:
+       name: gparted
+       state: present
+       update_cache: true
+     tags: AnsibleHousekeeping
+
+   - name: Install Vim
+     apt:
+       name: vim
+       state: present
+       update_cache: true
+     tags: os_config_files
+
+   - name: Install lightdm desktop manager
+     apt:
+       name: lightdm
+       state: present
+       update_cache: true
+     tags: os_config_files
+
+   - name: Install ncdu
+     apt:
+       name: ncdu
+       state: present
+       update_cache: true
+     tags: os_config_files
+
+   - name: Install lshw
+     apt:
+       name: lshw
+       state: present
+       update_cache: true
+     tags: os_config_files
+
+   - name: Create /usr/local/etc directory
+     file: path=/usr/local/etc state=directory mode=0755 owner=root group=root
+     tags: os_config_files
+
+   - name: Create /etc/environment file for setting system-wide environment variables
+     copy:
+       src: "{{ root_playbook_dir }}/etc/environment"
+       dest: /etc/environment
+       owner: root
+       group: root
+       mode: 0644
+        # tags: should be set to base after testing.
+        # This change requires a device reboot to access.
+     tags: custom_scripts
+
+#   - name: Copy /etc/interfaces file #Likely needs updates if I change interfaces
+#     copy:
+#       src: "{{ root_playbook_dir }}/etc/interfaces"
+#       dest: /etc/interfaces
+#       owner: root
+#       group: root
+#       mode: 0644
+#     tags: 
+#     - os_config_files
+#     - CaptivePortal
+#     - Hotspot
+
+   - name: Copy /etc/sysctl.conf file which disables ipv6 on the device
+     copy:
+       src: "{{ root_playbook_dir }}/etc/sysctl.conf"
+       dest: /etc/sysctl.conf
+       owner: root
+       group: root
+       mode: 0644
+     tags: 
+     - LearnLinux
+     - DisableIpV6
+
+   - name: Copy 72-wlan-geo-dependent.rules script that forces the onboard interface to be wlan0.  This is done because interface names are by default dynamically allocated, which can disrupt attempts to configure correct firewall rules & routing
+     copy:
+       src: "{{ root_playbook_dir }}/etc/udev/rules.d/72-wlan-geo-dependent.rules"
+       dest: /etc/udev/rules.d/72-wlan-geo-dependent.rules
+       owner: root
+       group: root
+       mode: 0644
+     tags: os_config_files
+
+   - name: Copy /etc/host.conf file 
+     copy:
+       src: "{{ root_playbook_dir }}/etc/host.conf"
+       dest: /etc/host.conf
+       owner: root
+       group: root
+       mode: 0644
+     tags: os_config_files
+
+   - name: Copy naked /etc/wpa_supplicant/wpa_supplicant.conf file 
+     copy:
+       src: "{{ root_playbook_dir }}/etc/wpa_supplicant/wpa_supplicant.conf"
+       dest: /etc/wpa_supplicant/wpa_supplicant.conf
+       owner: root
+       group: root
+       mode: 0644
+     tags: os_config_files
+
+   - name: add Python3 alias to .bashrc
+     become: true
+     become_user: pi
+     lineinfile:
+       path: .bashrc
+       line: 'alias python=python3'
+     tags: os_config_files
+
+   - name: source bashrc (I'm suspicious I don't need this step)
+     become: true
+     become_user: pi
+     shell: . /home/pi/.bashrc && ls
+     tags: os_config_files
+
+   - name: copy the /usr/local/bin/ClearLogs.sh script which clears the logs of the system
+     copy:
+       src: "{{ root_playbook_dir }}/usr/local/bin/ClearLogs.sh"
+       dest: /usr/local/bin/ClearLogs.sh
+       owner: root
+       group: root
+       mode: 0744
+     tags: 
+     - os_config_files
+     - AnsibleHousekeeping
+
+   - name: chmoding /usr/local/bin/ClearLogs.sh
+     file:
+       path: /usr/local/bin/ClearLogs.sh
+       owner: root
+       group: root
+       # when specifying mode using octal numbers, add a leading 0
+       mode: 0755
+     tags: 
+     - os_config_files
+     - AnsibleHousekeeping
+
+   - name: Copy /etc/modprobe.d/8192cu.conf file that prevents power saving on wlan0
+     copy:
+       src: "{{ root_playbook_dir }}/etc/modprobe.d/8192cu.conf"
+       dest: /etc/modprobe.d/8192cu.conf
+       owner: root
+       group: root
+       mode: 0644
+     tags: new
+
+   - name: adding existing user pi to groups www-data
+     user:
+       name: pi
+       groups: www-data
+       append: yes
+     tags: 
+     - FW_Wifi_Eth_Br
+     - web
+
+   - name: wget the Filesystem resizer
+     command: wget -O /etc/init.d/resize2fs_once https://raw.githubusercontent.com/RPi-Distro/pi-gen/master/stage2/01-sys-tweaks/files/resize2fs_once
+     tags: AnsibleHousekeeping 
+
+   - name: chmod +x the filesystem resizer
+     file:
+       path: /etc/init.d/resize2fs_once
+       owner: root
+       group: root
+       # when specifying mode using octal numbers, add a leading 0
+       mode: 0755
+     tags: os_config_files
+
+   - name: add quiet init=/usr/lib/raspi-config/init_resize.sh to /boot/cmdline.txt
+     lineinfile:
+       path: /boot/cmdline.txt
+       line: quiet init=/usr/lib/raspi-config/init_resize.sh
+       insertafter: EOF
+     tags: os_config_files
+
+   - name: sudo systemctl enable resize2fs_once
+     command: systemctl enable resize2fs_once
+     tags: os_config_files
+
+   - name: resolv.conf.head file
+     copy:
+       src: "{{ root_playbook_dir }}/etc/resolv.conf.head"
+       dest: /etc/resolv.conf.head
+       owner: root
+       group: root
+       mode: 0600
+     tags: LearnLinuxNetworkingHacking
+
+
+
+

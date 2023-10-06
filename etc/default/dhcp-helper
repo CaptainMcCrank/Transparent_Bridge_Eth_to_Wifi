@@ -1,0 +1,2 @@
+DHCPHELPER_OPTS="-b wlan0"
+EOF

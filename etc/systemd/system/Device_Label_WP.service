@@ -1,0 +1,10 @@
+[Unit]
+Description=A job to load the paperwhite display that gives device info
+
+[Service]
+Type=simple
+User=root
+ExecStart=/usr/local/bin/Device_Label_WP.py
+
+[Install]
+WantedBy=multi-user.target

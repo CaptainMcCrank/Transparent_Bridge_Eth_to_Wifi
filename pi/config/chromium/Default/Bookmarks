@@ -1,0 +1,43 @@
+{
+   "checksum": "a766404324a7873908b8bee6458cc5c5",
+   "roots": {
+      "bookmark_bar": {
+         "children": [ {
+            "date_added": "13196294779886506",
+            "guid": "02df73d7-4e3e-4d84-8555-5980ce666eb9",
+            "id": "2",
+            "meta_info": {
+               "last_visited_desktop": "13196294851751489"
+            },
+            "name": "HotspotUI",
+            "type": "url",
+            "url": "http://catcher.local/"
+         } ],
+         "date_added": "13196294379424546",
+         "date_modified": "13289018305225209",
+         "guid": "00000000-0000-4000-a000-000000000002",
+         "id": "1",
+         "name": "Bookmarks bar",
+         "type": "folder"
+      },
+      "other": {
+         "children": [  ],
+         "date_added": "13196294379424577",
+         "date_modified": "0",
+         "guid": "00000000-0000-4000-a000-000000000003",
+         "id": "3",
+         "name": "Other bookmarks",
+         "type": "folder"
+      },
+      "synced": {
+         "children": [  ],
+         "date_added": "13196294379424582",
+         "date_modified": "0",
+         "guid": "00000000-0000-4000-a000-000000000004",
+         "id": "4",
+         "name": "Mobile bookmarks",
+         "type": "folder"
+      }
+   },
+   "version": 1
+}

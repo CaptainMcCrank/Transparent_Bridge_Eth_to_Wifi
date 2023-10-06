@@ -1,0 +1,16 @@
+---
+   - debug:
+       msg: Avahi tasks"
+
+   - name: Copy /etc/avahi/avahi-daemon.conf file 
+     copy:
+       src: "{{ root_playbook_dir }}/etc/avahi/avahi-daemon.conf"
+       dest: /etc/avahi/avahi-daemon.conf
+       owner: root
+       group: netdev
+       mode: 0664
+     tags: 
+     - os_config_files
+     - FW_Wifi_Eth_Br
+     - dual_nic
+     - bridging

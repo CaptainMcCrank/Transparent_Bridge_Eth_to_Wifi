@@ -1,0 +1,148 @@
+---
+   - debug:
+       msg: "Webserver tasks"
+
+   - name: Copy www files over to target
+     synchronize:
+       src: "{{ root_playbook_dir }}/var/www/"
+       dest: /var/www/
+       recursive: yes
+     tags: 
+     - FW_Wifi_Eth_Br
+    
+   - name: Create /var/www/html directory
+     file: path=/var/www/html state=directory mode=0755 owner=www-data group=www-data
+     tags: 
+       - webserver
+       - FW_Wifi_Eth_Br
+
+   - name: Install lighttpd 
+     apt:
+       name: lighttpd
+       state: present
+       update_cache: true
+     tags: 
+     - web
+     - lighttpd
+
+   - name: Copy /var/www/html/lighttpd-dir.css css to make the directory listings pretty #Likely needs updates if I change interfaces
+     copy:
+       src: "{{ root_playbook_dir }}/var/www/html/lighttpd-dir.css"
+       dest: /var/www/html/lighttpd-dir.css
+       owner: root
+       group: root
+       mode: 0744
+     tags: 
+       - web
+       - lighttpd
+        
+   - name: chmoding /var/www/html/
+     file:
+       path: /var/www/html/
+       owner: www-data
+       group: www-data
+       mode: 0755
+       recurse: yes
+     tags: web
+
+   - name: Delete lighttpd default index.html file 
+     file: path=/var/www/html/index.lighttpd.html state=absent
+     tags:
+       - web
+       - lighttpd
+
+   - name: enable lighttpd access logging 
+     command: lighttpd-enable-mod accesslog
+     tags: 
+       - os_config_files
+       - web
+       - lighttpd
+
+   - name: Copy lighttpd configuration files over to target (enables SSL & error page redirects)
+     ansible.posix.synchronize:
+       src: "{{ root_playbook_dir }}/etc/lighttpd/"
+       dest:  /etc/lighttpd/
+       recursive: yes
+     tags:
+       - web
+       - lighttpd
+
+# For ssl on Lighttpd: 1) we need to Create the key & the CSR file
+   - name: For ssl on Lighttpd 1) we need to Create the key for webserver (RSA, 4096 bits)
+     community.crypto.openssl_privatekey:
+       path: "/etc/lighttpd/ssl/{{ Target_Hostname }}.local.key"
+     tags: 
+     - EthernetWebServer
+     - CaptivePortal
+     - Hotspot
+     - SSL 
+     - lighttpd
+
+   - name: For ssl on Lighttpd 2)  we create the CSR file for self-signed certificate
+     community.crypto.openssl_csr:
+       path: "/etc/lighttpd/ssl/{{ Target_Hostname }}.local.csr"
+       privatekey_path: "/etc/lighttpd/ssl/{{ Target_Hostname }}.local.key"
+       common_name: "{{ Target_Hostname }}.local"
+       organization_name: AcmeInc
+       ST: "OH"
+       L: "SpunkyPuddle"
+       subject_alt_name:
+         - "DNS:{{ Target_Hostname }}.local"
+         - "DNS:www.{{ Target_Hostname }}.local"
+     register: csr
+     tags: 
+     - EthernetWebServer
+     - CaptivePortal
+     - Hotspot
+     - SSL 
+     - lighttpd
+
+# just experimented with this.  I noticed that there's no crt file being created- so I'm hoping this
+   - name: For ssl on Lighttpd step 3) Use the CSR file & key to request a CRT file
+     community.crypto.x509_certificate:
+       path: "/etc/lighttpd/ssl/{{ Target_Hostname }}.local.crt"
+       privatekey_path: "/etc/lighttpd/ssl/{{ Target_Hostname }}.local.key"
+       csr_path: "/etc/lighttpd/ssl/{{ Target_Hostname }}.local.csr"
+       provider: selfsigned 
+     tags: 
+     - EthernetWebServer
+     - CaptivePortal
+     - Hotspot
+     - SSL 
+     - lighttpd     
+
+   - name: Creates fragments for prepping the pem file
+     file:
+       path: /etc/lighttpd/ssl/fragments/
+       state: directory
+     tags: 
+     - streamer
+     - CaptivePortal
+     - Hotspot
+     - SSL 
+     - lighttpd  
+
+
+   - name: move {{ Target_Hostname }}.local.key the fragments directory
+     command: "cp /etc/lighttpd/ssl/{{ Target_Hostname }}.local.key /etc/lighttpd/ssl/fragments/."
+     tags: 
+     - Firewall
+     - SSL
+     - lighttpd  
+
+   - name: move {{ Target_Hostname }}.local.crt the fragments directory
+     command: "cp /etc/lighttpd/ssl/{{ Target_Hostname }}.local.crt /etc/lighttpd/ssl/fragments/."
+     tags: 
+     - Firewall
+     - SSL
+     - lighttpd  
+
+   - name: Assemble from fragments from a directory
+     ansible.builtin.assemble:
+       src: /etc/lighttpd/ssl/fragments/
+       dest: "/etc/lighttpd/ssl/{{ Target_Hostname }}.local.pem"
+     tags: 
+     - Firewall
+     - SSL
+     - lighttpd  
+

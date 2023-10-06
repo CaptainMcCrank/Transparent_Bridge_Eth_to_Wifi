@@ -1,0 +1,152 @@
+---
+
+# https://www.youtube.com/watch?v=lIM9yC8U42E
+
+# I wanted to have a high power radio to max out my range.  The youtube
+# video above explains the tradeoffs.  I could further optimize this solution with a second 
+# amped wireless A8EX
+
+   - debug:
+       msg: "AWUS036ACH driver tasks"
+
+   - name: Clone of 8812au-20210629.git drivers
+     ansible.builtin.git:
+       repo: https://github.com/morrownr/8812au-20210629.git
+       dest: /home/pi/8812au_src/
+       #single_branch: yes
+       #version: master
+     tags:          
+     - nodogsplash
+     - streamer
+
+   - name: Install driver prerequisites
+     apt:
+       name: "{{ item }}"
+       state: present
+     loop:
+       - bison
+       - flex
+#       - libssl-dev
+       - python2
+       - libncurses5-dev
+       - bc
+       - dkms
+
+   - name: wget rpi-source
+     command: wget -O /usr/local/bin/rpi-source  https://raw.githubusercontent.com/RPi-Distro/rpi-source/master/rpi-source
+
+   - name: Change ownership of rpi-source
+     ansible.builtin.file:
+       path: /usr/local/bin/rpi-source
+       owner: pi
+       group: pi
+       mode: 0740
+
+   - name: update rpi-source
+     ansible.builtin.expect:
+       command: /usr/bin/rpi-update
+       responses:
+         (?i)proceed?: "y"
+       timeout: 300 
+
+   - name: launch the reboot
+     shell: 'sleep 1 && shutdown -r now "Reboot triggered by Ansible" && sleep 1'
+     async: 1
+     poll: 0
+
+   - name: Wait for server to restart
+     local_action:
+       module: wait_for
+         host={{ inventory_hostname }}
+         port=22
+         delay=10
+
+   - name: run rpi-source
+     shell: /usr/local/bin/rpi-source || /bin/true
+     ignore_errors: true
+     args:
+       executable: /bin/bash
+     become_user: pi
+
+   - name: Run apt-get update
+     apt:
+       update_cache: yes 
+
+#   - name: launch the reboot
+#     reboot:
+#       msg: "Reboot with ansible..."
+#       connect_timeout: 5
+#       reboot_timeout: 120
+#       #pre_reboot_delay: 0
+#       #post_reboot_delay: 30
+#       test_command: whoami
+
+#   - name: launch the reboot
+#     shell: 'sleep 1 && shutdown -r now "Reboot triggered by Ansible" && sleep 1'
+#     async: 1
+#     poll: 0
+
+#   - name: Wait for server to restart
+#     local_action:
+#       module: wait_for
+#         host={{ inventory_hostname }}
+#         port=22
+#         delay=10
+
+   - name: enable kernel headers
+     command: apt policy raspberrypi-kernel-headers
+
+   - name: Install raspberrypi-kernel-headers
+     apt:
+       name: raspberrypi-kernel-headers
+       state: present
+
+
+#cp ~/8812au_src/dkms.conf /usr/src/rtl8812au-5.13.6/.
+
+   - name: remove the drivers
+     ansible.builtin.expect:
+       command: /bin/bash /home/pi/8812au_src/remove-driver.sh
+       responses:
+         (?i)(recommended): "N"
+
+   - name: install the drivers
+     ansible.builtin.expect:
+       chdir: /home/pi/8812au_src
+       command: /bin/bash /home/pi/8812au_src/install-driver.sh
+       responses: 
+         Do you want to edit the driver options file now\? \(recommended\) \[Y\/n\] : "n"
+         (?i)rebooting now\? \(recommended\) \[Y\/n\].: "n"
+       timeout: 500 #650
+
+#   - name: Prompt for manual instalation of drivers
+#     ansible.builtin.pause:
+#       prompt: "Manually ssh into the device and run the following command: sudo /home/pi/8812au_src/install-driver.sh"
+
+
+#   - name: Copy dkms.conf file
+#     command: mv /home/pi/8812au_src/dkms.conf /usr/src/rtl8812au-5.13.6/.
+
+
+# I could not figure this out.  If you run this command from ansible it errors out.  Doesn't when shelled in manually:
+
+# Installing 8812au.conf to /etc/modprobe.d
+#The dkms installation routines are in use.
+#Copying source files to /usr/src/rtl8812au-5.13.6
+#Error! Could not locate dkms.conf file.
+#File: /usr/src/rtl8812au-5.13.6/dkms.conf does not exist.
+#An error occurred. dkms add error:  4
+
+#   - name: install the drivers
+#     ansible.builtin.expect:
+#       command: /bin/bash /home/pi/8812au_src/install-driver.sh
+#       responses:
+#         Question: 
+#           - (?i)file now?: "y"
+#           - (?i)file now?: "N"
+
+
+#   - name: install the drivers
+#     command: /home/pi/8812au_src/install-driver.sh
+
+         

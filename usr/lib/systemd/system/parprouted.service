@@ -1,0 +1,23 @@
+[Unit]
+Description=proxy arp routing service
+Documentation=https://raspberrypi.stackexchange.com/q/88954/79866
+Requires=sys-subsystem-net-devices-wlan0.device dhcpcd.service
+After=sys-subsystem-net-devices-wlan0.device dhcpcd.service
+
+[Service]
+Type=forking
+# Restart until wlan0 gained carrier
+Restart=on-failure
+RestartSec=5
+TimeoutStartSec=30
+# clone the dhcp-allocated IP to eth0 so dhcp-helper will relay for the correct subnet
+ExecStartPre=/bin/bash -c '/sbin/ip addr add $(/sbin/ip -4 -br addr show wlan0 | /bin/grep -Po "\\d+\\.\\d+\\.\\d+\\.\\d+")/32 dev eth0'
+ExecStartPre=/sbin/ip link set dev eth0 up
+ExecStartPre=/sbin/ip link set wlan0 promisc on
+ExecStart=-/usr/sbin/parprouted eth0 wlan0
+ExecStopPost=/sbin/ip link set wlan0 promisc off
+ExecStopPost=/sbin/ip link set dev eth0 down
+ExecStopPost=/bin/bash -c '/sbin/ip addr del $(/sbin/ip -4 -br addr show wlan0 | /bin/grep -Po "\\d+\\.\\d+\\.\\d+\\.\\d+")/32 dev eth0'
+
+[Install]
+WantedBy=wpa_supplicant.service

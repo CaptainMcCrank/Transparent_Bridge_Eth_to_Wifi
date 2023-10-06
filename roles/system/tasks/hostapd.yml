@@ -1,0 +1,77 @@
+---
+   - debug:
+       msg: "HOSTAPD tasks"
+
+   - name: Install hostapd
+     apt:
+       name: hostapd
+       state: present
+       update_cache: true
+     tags: hotspot
+
+   - name: Create hostapd Configuration directory
+     file: path=/etc/hostapd/ state=directory mode=0755
+     tags: hotspot
+
+   - name: Copy /etc/hostapd/WifiRepeaterHostAPD.conf 
+     ansible.builtin.copy:
+       src: "{{ root_playbook_dir }}/etc/hostapd/WifiRepeaterHostAPD.conf"
+       dest: /etc/hostapd/WifiRepeaterHostAPD.conf
+       owner: root
+       group: root
+       mode: 0744
+     tags: hotspot
+
+   - name: assign custom ssid       
+     lineinfile:
+       path: /etc/hostapd/WifiRepeaterHostAPD.conf
+       regexp: '^ssid=xxx$'
+       line: 'ssid={{ wifi_network_ssid }}'
+
+   - name: Set the wifi Interface        
+     lineinfile:
+       path: /etc/hostapd/WifiRepeaterHostAPD.conf
+       regexp: '^interface=wlan.'
+       line: 'interface={{ wifi_interface }}'
+  
+   - name: assign wifi key       
+     lineinfile:
+       path: /etc/hostapd/WifiRepeaterHostAPD.conf
+       regexp: '^wpa_passphrase=ChangeMe'
+       line: 'wpa_passphrase={{ wifi_password }}'
+
+   - name: Copy /etc/default/hostapd file
+     copy:
+       src: "{{ root_playbook_dir }}/etc/default/hostapd"
+       dest: /etc/default/hostapd
+       owner: root
+       group: root
+       mode: 0755
+     tags: hotspot
+
+   - name: assign HostAPD Configuration in etc_default_hostapd 
+     lineinfile:
+       path: /etc/default/hostapd
+       regexp: '^DAEMON_CONF*.'
+       line: 'DAEMON_CONF=/etc/hostapd/{{ hostapd_file }}'
+
+   - name: unmask hostapd
+     command: systemctl unmask hostapd.service
+     tags: hotspot
+
+   - name: Copy /run/systemd/generator.late file #Likely needs updates if I change interfaces
+     ansible.builtin.copy:
+       src: "{{ root_playbook_dir }}/etc/init.d/hostapd"
+       dest: /etc/init.d/hostapd
+       owner: root
+       group: root
+       mode: 0755
+     tags: hostapd
+
+   - name: unmask hostapd
+     command: systemctl unmask hostapd.service
+     tags: hotspot
+
+   - name: enable hostapd (so it launches afterboot)
+     command: update-rc.d hostapd enable
+     tags: base
