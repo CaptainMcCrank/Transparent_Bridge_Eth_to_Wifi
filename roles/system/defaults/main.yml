@@ -3,7 +3,7 @@ py_version: 3.8.0
 threads: 4
 temp_folder: /tmp
 
-root_playbook_dir: /home/pi/Playbooks/Transparent_Bridge_Eth_To_Wifi
+root_playbook_dir: /home/pi/Playbooks/Transparent_Bridge_Eth_to_Wifi
 os_info_path: /etc/os-release
 int_count: "{{ ansible_interfaces | count }}"
 ansible_python_interpreter: "/usr/bin/python3.9"
@@ -20,3 +20,5 @@ version:
   Ver: 0.1
   Author: p@mccannabanana.com
   Description: A Transparent Bridging wifi repeater
+
+
