@@ -297,8 +297,6 @@
        regexp: '(?i)AnsibleDest.*$'  
        replace: '{{ Target_Hostname }}{{ wifi_network_ssid }}'
 
-   - name: Check to see why changing the /etc/hosts file failed.
-     ansible.builtin.pause:
 
    - name: Set a hostname
      ansible.builtin.hostname:
