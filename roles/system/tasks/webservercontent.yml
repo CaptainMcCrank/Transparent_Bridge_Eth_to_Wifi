@@ -67,6 +67,12 @@
        - web
        - lighttpd
 
+   - name: Ensure /etc/lighttpd/ssl/ directory exists
+     file:
+       path: /etc/lighttpd/ssl
+       state: directory
+       mode: '0755'
+
 # For ssl on Lighttpd: 1) we need to Create the key & the CSR file
    - name: For ssl on Lighttpd 1) we need to Create the key for webserver (RSA, 4096 bits)
      community.crypto.openssl_privatekey:
