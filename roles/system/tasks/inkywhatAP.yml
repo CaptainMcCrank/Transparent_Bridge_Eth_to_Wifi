@@ -1,11 +1,13 @@
 ---
    - debug:
-       msg: "Inkywhat tasks"
+       msg: "Inkywhat tasks for a WIFI Access Point Bridge"
 
-   - name: Create /etc/systemd/system/Device_Label_WP.service file 
+       # this script uses the specialize /usr/local/bin/Device_Label_WifiAP.py script.
+
+   - name: Create /etc/systemd/system/Device_Label_WifiAP.service file 
      copy:
-       src: "{{ root_playbook_dir }}/etc/systemd/system/Device_Label_WP.service"
-       dest: /etc/systemd/system/Device_Label_WP.service
+       src: "{{ root_playbook_dir }}/etc/systemd/system/Device_Label_WifiAP.service"
+       dest: /etc/systemd/system/Device_Label_WifiAP.service
        owner: root
        group: root
        mode: 0744
@@ -13,10 +15,10 @@
      - os_config
      - inkywhat
 
-   - name: Create /etc/systemd/system/Device_Label_WP.timer file 
+   - name: Create /etc/systemd/system/Device_Label_WifiAP.timer file 
      copy:
-       src: "{{ root_playbook_dir }}/etc/systemd/system/Device_Label_WP.timer"
-       dest: /etc/systemd/system/Device_Label_WP.timer
+       src: "{{ root_playbook_dir }}/etc/systemd/system/Device_Label_WifiAP.timer"
+       dest: /etc/systemd/system/Device_Label_WifiAP.timer
        owner: root
        group: root
        mode: 0744
@@ -79,13 +81,13 @@
        name: fonttools
 
    - name: enable inkywhat service that reports device state
-     command: systemctl enable Device_Label_WP.service
+     command: systemctl enable Device_Label_WifiAP.service
      tags:
        - nftables
        - inkywhat
 
    - name: enable inkywhat timer that reports device state
-     command: systemctl enable Device_Label_WP.timer
+     command: systemctl enable Device_Label_WifiAP.timer
      tags:
        - nftables
        - inkywhat

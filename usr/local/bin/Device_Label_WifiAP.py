@@ -178,10 +178,20 @@ def main():
 
     draw.text((0, ifaceStart * 3.1), WifiClients[0], inky_display.BLACK, font)
 
-    row = 4.1
+    row = 4.1 # an index for the starting point of our Y coordinate for the text.  will be offset with the ifacestart value.
+    counter = 0 # an index for the element we're on in the array.
+
+    # We're going to print the mac address of every attached device up to 14 clients.
     for macaddress in WifiClients[1]:
-        draw.text((0, ifaceStart * row), macaddress, inky_display.BLACK, font)
-        row += 1
+        while counter < 12:
+            if (counter % 2 == 0):
+                #if the index is even, we'll print it on the left side.
+                draw.text((0, ifaceStart * row), macaddress, inky_display.BLACK, font)
+            else:
+                #if the index is odd, we'll print it on the right side and increment our counter. 
+                draw.text((160, ifaceStart * row), macaddress, inky_display.BLACK, font)
+                row += 1    
+            counter += 1
 
     inky_display.set_image(img)
     inky_display.show()
