@@ -1,5 +1,6 @@
 ---
 - import_tasks: essential.yml
+- import_tasks: device_registration.yml
 - import_tasks: AWUS036ACH_wifi_adapter.yml
   when: wifi_interface == "wlan1"
 - import_tasks: hostapd.yml

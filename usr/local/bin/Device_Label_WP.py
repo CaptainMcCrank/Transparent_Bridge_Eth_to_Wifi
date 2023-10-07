@@ -40,6 +40,14 @@ def is_interface_up(interface):
     return ni.AF_INET in addr
 
 
+def get_interface_info2():
+    for iface in ni.interfaces():
+        if iface == 'lo' or iface.startswith('vbox'):
+            continue
+        iface_details = ni.ifaddresses(iface)
+        if ni.AF_INET in iface_details:
+            message = iface + ' has address: ' + iface_details[ni.AF_INET][0]['addr']
+            print(message)
 
 def get_interface_info(interface_list):
     #for every interface on the OS, we're going to gather data about it's state and current ip address.
@@ -86,54 +94,65 @@ def get_interface_info(interface_list):
     
     return network_list
 
-img = Image.new("P", (inky_display.WIDTH, inky_display.HEIGHT))
-draw = ImageDraw.Draw(img)
-import textwrap
 
-message = "" 
-for item in get_interface_info(interface_list):
-    #if (item.get('state')[0]!= "down\n"):
-        #sometext= "eth0 is up and has: 192.168.6.119 lo is unknown and has: 127.0.0.1"
-        #sometext= "abcdefghijklmnopqrstuvwxyz"
-        #sometext= "abcdefghijklmnopqrstuvwxyzabcdefghijklm"
+def main():
+    img = Image.new("P", (inky_display.WIDTH, inky_display.HEIGHT))
+    draw = ImageDraw.Draw(img)
+    import textwrap
 
-    message += str(item.get('iface_name')).strip('\n') + " " + str(item.get('state')[0]).strip('\n') + " and has: " + str(item.get('address')) +'\n' 
-wrappedText = textwrap.wrap(message, width=36)
-#wrappedText = textwrap.wrap(message, width=35)
+    message = "" 
+    #for item in get_interface_info(interface_list):
 
-JoinedText= "\n".join(wrappedText)
-
-BuildDate = getDeviceData("BuildDate:")
-BuildDescription = getDeviceData("Description")
-BuildAuthor = getDeviceData("Author")
-BuildVer = getDeviceData("Ver")
-BuildDescription = textwrap.wrap(BuildDescription, width=36)
-JoinedText= "\n".join(BuildDescription)
-print(BuildDescription)
-
-font = ImageFont.truetype(FredokaOne, 18)
-w,h = font.getsize(message)
-x = (inky_display.WIDTH/ 8) 
-y = (inky_display.HEIGHT / 2) - (w/2)
-#draw.text((x, y), JoinedText, inky_display.RED, font)
-messageRowCount = print(math.ceil(len(message)/36))
-
-draw.text((0, 5), socket.getfqdn() + ".local", inky_display.RED, font)
-
-ifaceStart = 30 # We will use to space text appropriately
-
-draw.text((x, ifaceStart), message, inky_display.RED, font)
-
-draw.text((x, ifaceStart * 3.5), BuildDate, inky_display.RED, font)
-
-draw.text((x, ifaceStart * 4.1), BuildAuthor, inky_display.RED, font)
-
-draw.text((x, ifaceStart * 5.1), BuildVer, inky_display.RED, font)
-
-draw.text((0, ifaceStart * 6.1), JoinedText, inky_display.BLACK, font)
+    for iface in ni.interfaces():
+        if iface == 'lo' or iface.startswith('vbox'):
+            continue
+        iface_details = ni.ifaddresses(iface)
+        if ni.AF_INET in iface_details:
+            message += iface + ' has address: ' + iface_details[ni.AF_INET][0]['addr']
+            
+    
+    wrappedText = textwrap.wrap(message, width=36)
 
 
-inky_display.set_image(img)
-inky_display.show()
+    #JoinedText= "\n".join(wrappedText)
+
+    BuildDate = getDeviceData("BuildDate:")
+    BuildDescription = getDeviceData("Description")
+    BuildAuthor = getDeviceData("Author")
+    BuildVer = getDeviceData("Ver")
+    BuildDescription = textwrap.wrap(BuildDescription, width=36)
+    JoinedText= "\n".join(BuildDescription)
+    print(BuildDescription)
+
+    font = ImageFont.truetype(FredokaOne, 18)
+    w,h = font.getsize(message)
+    x = (inky_display.WIDTH/ 8) 
+    y = (inky_display.HEIGHT / 2) - (w/2)
+    #draw.text((x, y), JoinedText, inky_display.RED, font)
+    messageRowCount = print(math.ceil(len(message)/36))
+
+    draw.text((0, 5), socket.getfqdn() + ".local", inky_display.RED, font)
+
+    ifaceStart = 30 # We will use to space text appropriately
+
+    draw.text((x, ifaceStart), message, inky_display.RED, font)
+
+    draw.text((x, ifaceStart * 3.5), BuildDate, inky_display.RED, font)
+
+    draw.text((x, ifaceStart * 4.1), BuildAuthor, inky_display.RED, font)
+
+    draw.text((x, ifaceStart * 5.1), BuildVer, inky_display.RED, font)
+
+    draw.text((0, ifaceStart * 6.1), JoinedText, inky_display.BLACK, font)
+
+
+    inky_display.set_image(img)
+    inky_display.show()
+
+
+if __name__ == "__main__":
+    main()
+
+
 
 
