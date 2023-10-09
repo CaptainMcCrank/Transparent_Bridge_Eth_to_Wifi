@@ -28,11 +28,13 @@ It uses eth for internet access and the wifi interface vends network to anything
 
 | Software | Description |
 | ----------- | ----------- |
+
 | [lighttpd](https://www.lighttpd.net/) | Webserver software (Not used in current build- but useful if you use web management software) |
 | [avahi](https://www.avahi.org) | Avahi is a system which facilitates service discovery on a local network via the mDNS/DNS-SD protocol suite) |
 | [hostapd](https://w1.fi/hostapd/) | a user space daemon for access point and authentication servers. It implements IEEE 802.11 access point management, IEEE 802.1X/WPA/WPA2/EAP Authenticators, RADIUS client, EAP server, and RADIUS authentication server) |
 | [inkywhat](https://github.com/pimoroni/inky) | a 400x300 pixel electronic paper (ePaper / eInk / EPD) display for Raspberry Pi) |
 | [bridge networking](https://www.raspberrypi.com/documentation/computers/configuration.html#setting-up-a-bridged-wireless-access-point) | The Raspberry Pi can be used as a bridged wireless access point within an existing Ethernet network. This will extend the network to wireless computers and devices.) |
+
 
 
 ## Setup instructions
