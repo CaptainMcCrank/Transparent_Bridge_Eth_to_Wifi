@@ -55,13 +55,13 @@ The Validation Agent (06) runs these immediately after deployment. The Deploymen
 - **Expected:** one of the two returns success within 5 s
 - **Negative cases:** none (pass/fail)
 
-### TC-S-005: Device label timer installed
+### TC-S-005: Status display timer installed
 
-- **What it covers:** the Inky wHAT display refresh unit from `inkywhatAP.yml`
+- **What it covers:** the inky-status refresh unit from `inky_status.yml` (GH #2 replaced the legacy `Device_Label_WifiAP` path this TC originally checked)
 - **Setup:** none; passes with or without the display hardware attached
-- **Action:** `systemctl is-enabled --quiet Device_Label_WifiAP.timer`
-- **Expected:** timer enabled
-- **Negative cases:** none (pass/fail)
+- **Action:** `systemctl is-enabled --quiet inky-status.timer`, and the inverse check that `Device_Label_WifiAP.timer` is no longer enabled
+- **Expected:** new timer enabled, legacy timer gone
+- **Negative cases:** legacy timer still enabled = playbook re-run has not converged the device
 
 ### TC-S-006: Client DHCP passthrough (manual)
 
@@ -71,3 +71,12 @@ The Validation Agent (06) runs these immediately after deployment. The Deploymen
 - **Expected:** client address is in the wired LAN's subnet
 - **Negative cases:** client gets a 169.254.x.x address = DHCP broadcasts not crossing the bridge
 - **Note:** not automated (needs a second radio); run by a human after first deployment of a new image
+
+### TC-S-007: Status display runtime intact
+
+- **What it covers:** the inky-status venv and font install from `inky_status.yml` — the failure modes that exit 0 elsewhere (pip-built spidev that cannot import, zero-font images falling back to PIL's bitmap font)
+- **Setup:** none; needs no panel attached (renders to PNG, and SPI is write-only anyway)
+- **Action:** `venv/bin/python -c "import inky, PIL, numpy, spidev, gpiod"`; check DejaVuSans-Bold.ttf exists; headless render `inky_status.py --out /tmp/inky_smoke.png`
+- **Expected:** all imports resolve, font present, render exits 0
+- **Negative cases:** import failure = venv built without `--system-site-packages` or apt deps missing
+- **Note:** a passing render proves nothing about the panel itself — SPI is write-only. Visual confirmation after first boot remains a manual step (see TC-S-006's pattern)

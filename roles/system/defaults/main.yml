@@ -18,6 +18,10 @@ docker_host: "{{ lookup('ansible.builtin.env', 'DOCKER_HOST') }}"
 ssh_password_pi: "{{ lookup('ansible.builtin.env', 'BRIDGE_PI_PASSWORD') }}"
 wifi_password: "{{ lookup('ansible.builtin.env', 'BRIDGE_WIFI_PASSWORD') }}"
 wifi_network_ssid: "workshop"
+# Inky e-paper status display (inky_status.yml). "auto" probes the board-ID
+# EEPROM; boards without one must be named: what | phat | phat1608.
+inky_board: "auto"
+inky_colour: "red"
 hostapd_file: "WifiRepeaterHostAPD.conf"
 wifi_interface: "wlan0"
 version:

@@ -1,0 +1,196 @@
+---
+   - debug:
+       msg: "Inky status display: network/configuration status on the e-paper panel"
+
+   # Ported from the hardware-verified FixingSDCard/inky-status install.sh
+   # (see .FeatureDevelopment/2026-08-17_inky-status-display/). Replaces the
+   # legacy Device_Label_WifiAP path, which installed deps with system-wide
+   # pip (fails on Bookworm's externally-managed Python) and drove the
+   # interactive get.pimoroni.com script via expect.
+
+   - name: Locate boot firmware config
+     stat:
+       path: /boot/firmware/config.txt
+     register: boot_firmware_config
+     tags:
+     - inky_status
+
+   - name: Select boot config path
+     set_fact:
+       boot_config_path: "{{ '/boot/firmware/config.txt' if boot_firmware_config.stat.exists else '/boot/config.txt' }}"
+     tags:
+     - inky_status
+
+   # The stock image ships dtparam=spi/i2c_arm commented out, so match the
+   # commented form too or a plain presence check false-positives and the
+   # panel stays dark. SPI drives the panel; I2C reads the board-ID EEPROM
+   # that inky.auto() probes; spi0-0cs stops the kernel claiming GPIO8,
+   # which inky drives itself via gpiod. All three need a reboot to apply.
+   - name: Enable SPI, I2C and free GPIO8 in boot config
+     lineinfile:
+       path: "{{ boot_config_path }}"
+       regexp: '^\s*#?\s*{{ item | regex_escape }}\s*$'
+       line: "{{ item }}"
+     loop:
+     - "dtparam=spi=on"
+     - "dtparam=i2c_arm=on"
+     - "dtoverlay=spi0-0cs"
+     tags:
+     - inky_status
+
+   # dtparam=i2c_arm=on enables the bus but does not create /dev/i2c-*;
+   # that needs the i2c-dev module, which a minimal image never loads.
+   - name: Load i2c-dev module at boot
+     copy:
+       content: "i2c-dev\n"
+       dest: /etc/modules-load.d/i2c-dev.conf
+       owner: root
+       group: root
+       mode: 0644
+     tags:
+     - inky_status
+
+   - name: Load i2c-dev module now
+     command: modprobe i2c-dev
+     failed_when: false
+     changed_when: false
+     tags:
+     - inky_status
+
+   # Compiled Python deps come from apt, not pip: spidev has no aarch64
+   # wheel, so a pure-pip install needs a toolchain and is slow on a Pi 3.
+   # fonts-dejavu-core is required -- minimal images ship zero fonts and the
+   # script would silently fall back to PIL's bitmap font.
+   - name: Install inky-status dependencies
+     apt:
+       name:
+       - python3-venv
+       - python3-dev
+       - python3-numpy
+       - python3-pil
+       - python3-spidev
+       - python3-smbus2
+       - python3-libgpiod
+       - fonts-dejavu-core
+       - iw
+       - i2c-tools
+       state: present
+       update_cache: true
+       install_recommends: false
+     tags:
+     - inky_status
+
+   - name: Create /opt/inky-status
+     file:
+       path: /opt/inky-status
+       state: directory
+       owner: root
+       group: root
+       mode: 0755
+     tags:
+     - inky_status
+
+   # --system-site-packages so the venv reuses the apt-installed numpy,
+   # Pillow, spidev, smbus2 and gpiod; only inky itself comes from pip.
+   - name: Install inky into a dedicated venv
+     pip:
+       name: inky
+       virtualenv: /opt/inky-status/venv
+       virtualenv_command: "python3 -m venv --system-site-packages"
+     tags:
+     - inky_status
+
+   - name: Install inky_status.py
+     copy:
+       src: "{{ root_playbook_dir }}/opt/inky-status/inky_status.py"
+       dest: /opt/inky-status/inky_status.py
+       owner: root
+       group: root
+       mode: 0755
+     tags:
+     - inky_status
+
+   - name: Install inky-status.service
+     copy:
+       src: "{{ root_playbook_dir }}/etc/systemd/system/inky-status.service"
+       dest: /etc/systemd/system/inky-status.service
+       owner: root
+       group: root
+       mode: 0644
+     tags:
+     - inky_status
+
+   - name: Install inky-status.timer
+     copy:
+       src: "{{ root_playbook_dir }}/etc/systemd/system/inky-status.timer"
+       dest: /etc/systemd/system/inky-status.timer
+       owner: root
+       group: root
+       mode: 0644
+     tags:
+     - inky_status
+
+   # Board selection: auto probes the ID EEPROM; boards without one must be
+   # named (what / phat / phat1608). force: false so a deliberate per-host
+   # override already on the device is never clobbered.
+   - name: Write /etc/default/inky-status board selection
+     copy:
+       content: |
+         # INKY_BOARD: auto | what | phat | phat1608
+         #   auto      probe the ID EEPROM (fails on boards that lack one)
+         #   what      400x300 Inky wHAT
+         #   phat      212x104 Inky pHAT
+         #   phat1608  250x122 Inky pHAT (SSD1608)
+         # INKY_COLOUR applies only when the board is named explicitly.
+         INKY_BOARD={{ inky_board }}
+         INKY_COLOUR={{ inky_colour }}
+       dest: /etc/default/inky-status
+       force: false
+       owner: root
+       group: root
+       mode: 0644
+     tags:
+     - inky_status
+
+   # Enable the timer, not the service: it draws 2min after boot and daily.
+   # Never start the service from the build -- a draw against no panel exits
+   # 0 anyway (SPI is write-only) and on a real panel burns a refresh cycle.
+   - name: Enable inky-status.timer
+     systemd:
+       name: inky-status.timer
+       enabled: true
+       state: started
+       daemon_reload: true
+     tags:
+     - inky_status
+
+   # ── retire the legacy Device_Label_WifiAP display path ────────────────
+   - name: Stop and disable legacy Device_Label_WifiAP units
+     systemd:
+       name: "{{ item }}"
+       enabled: false
+       state: stopped
+     loop:
+     - Device_Label_WifiAP.timer
+     - Device_Label_WifiAP.service
+     failed_when: false
+     tags:
+     - inky_status
+
+   - name: Remove legacy Device_Label artifacts
+     file:
+       path: "{{ item }}"
+       state: absent
+     loop:
+     - /etc/systemd/system/Device_Label_WifiAP.service
+     - /etc/systemd/system/Device_Label_WifiAP.timer
+     - /usr/local/bin/Device_Label_WifiAP.py
+     - /usr/local/bin/Device_Label_WP.py
+     tags:
+     - inky_status
+
+   - name: Reload systemd after removing legacy units
+     systemd:
+       daemon_reload: true
+     tags:
+     - inky_status

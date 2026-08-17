@@ -1,0 +1,14 @@
+[Unit]
+Description=Daily Inky pHAT status refresh
+
+[Timer]
+# Once a day: the uptime advances and the bands change places.
+OnCalendar=daily
+# Also draw shortly after boot so the panel is never stale for a whole day.
+OnBootSec=2min
+# Catch up if the Pi was powered off when the daily run was due.
+Persistent=true
+AccuracySec=1m
+
+[Install]
+WantedBy=timers.target

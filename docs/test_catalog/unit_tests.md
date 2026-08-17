@@ -34,3 +34,11 @@ Build-side correctness checks that need no target device: does the playbook pars
 - **Action:** `tests/unit/credential_checks_test.sh` runs five scenarios: both vars unset; pi password set with valid passphrase; passphrase under 8 chars; passphrase over 63 chars; both valid
 - **Expected:** unset and out-of-range passphrases abort the play with the documented message; valid values pass
 - **Negative cases:** are the point of the test
+
+### TC-U-003: inky-status hardware-free renders
+
+- **What it covers:** `opt/inky-status/inky_status.py` (GH #2) — compiles, and renders previews without hardware in both collection modes
+- **Setup:** python3; render steps need PIL and skip cleanly without it
+- **Action:** `tests/unit/inky_status_test.sh` — `py_compile`; `--simulate --out` (client mode); `--simulate-ap --out` (AP mode, the bridge's real mode); a 400x300 wHAT-resolution render; all six `--day 0..5` band orderings (the anti-ghosting rotation)
+- **Expected:** compile passes and every render exits 0 writing a PNG
+- **Negative cases:** a band function raising on None data (e.g. no IP, no stations) surfaces here before it can brick the on-device draw

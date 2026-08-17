@@ -66,6 +66,8 @@ run_unit_tests() {
   local out
   out=$(tests/unit/credential_checks_test.sh 2>&1)
   absorb_result "$out"
+  out=$(tests/unit/inky_status_test.sh 2>&1)
+  absorb_result "$out"
 }
 
 # ── plumbing ────────────────────────────────────────────────────────────────
