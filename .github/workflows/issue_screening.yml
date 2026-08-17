@@ -1,0 +1,68 @@
+# Issue Security Screening Workflow
+#
+# Runs deterministic security checks on every issue open/edit/reopen.
+# Issues that pass receive the `bot-ready` label; flagged issues get
+# `needs-human-review` for manual triage.
+#
+# Copy this file to .github/workflows/issue_screening.yml in your repo.
+
+name: Issue Security Screening
+
+on:
+  issues:
+    types: [opened, edited, reopened]
+
+permissions:
+  issues: write
+
+jobs:
+  screen:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sparse checkout screening script
+        uses: actions/checkout@v4
+        with:
+          repository: CaptainMcCrank/LLM_Pre-Prompts   # TODO: replace with your prompt library repo
+          sparse-checkout: |
+            Standards/Scripts/screen_issue.py
+            Standards/Scripts/screen_issue_config.json
+          sparse-checkout-cone-mode: false
+          path: prompt-library
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Ensure labels exist
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh label create "bot-ready" \
+            --description "Issue passed automated security screening" \
+            --color "0e8a16" \
+            --repo "${{ github.repository }}" 2>/dev/null || true
+          gh label create "needs-human-review" \
+            --description "Issue flagged by security screening — requires manual review" \
+            --color "e11d48" \
+            --repo "${{ github.repository }}" 2>/dev/null || true
+
+      - name: Run screening
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          python prompt-library/Standards/Scripts/screen_issue.py \
+            --config prompt-library/Standards/Scripts/screen_issue_config.json
+        # Exit codes: 0=PASS, 1=WARN, 2=FAIL — all are valid outcomes,
+        # so we don't fail the workflow on non-zero.
+        continue-on-error: true
+
+      - name: Upload screening results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screening-result-${{ github.event.issue.number }}
+          path: screening-result.json
+          if-no-files-found: ignore

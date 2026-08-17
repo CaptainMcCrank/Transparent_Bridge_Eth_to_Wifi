@@ -1,0 +1,26 @@
+# Common Failure Patterns (seeded from brownfield adoption)
+#
+# Each entry was derived from an existing, citable source at adoption time.
+# Downstream agents (06, 06B, 09, 10, 11) append new patterns as they surface.
+
+patterns:
+  - id: "hostapd-brcmfmac-sdio-001"
+    error_signature: |
+      hostapd.service: Failed with result 'exit-code'
+      brcmfmac: brcmf_sdio_txfail: sdio error, abort command and terminate frame
+    symptoms:
+      - "hostapd.service fails to start; systemctl restart returns 'control process exited with error code'"
+      - "journalctl shows repeated brcmfmac sdio errors (brcmf_sdio_bus_sleep error -110, brcmf_sdio_txfail)"
+      - "WiFi network never appears"
+    root_causes:
+      - cause: "Onboard Broadcom WiFi radio hardware failure (SDIO bus errors from the brcmfmac driver indicate the radio itself is failing, not a hostapd configuration problem)"
+        likelihood: high
+        diagnostic_steps:
+          - "systemctl status hostapd.service"
+          - "journalctl -xe and look for brcmfmac sdio errors alongside the hostapd failure"
+        fix: "Unresolved in the source issue. Reporter classified it as a hardware failure condition; swap the Pi or use an external USB adapter to isolate."
+    related_issues:
+      - 1
+    source: "issue #1 (Wifi not working. Hardware failure condition, opened 2023-10-07, still open at adoption)"
+    added_by: "brownfield-adoption-agent-v1.0"
+    added_date: "2026-08-17T12:39:36-07:00"

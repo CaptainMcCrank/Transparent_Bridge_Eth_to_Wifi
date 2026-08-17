@@ -1,0 +1,45 @@
+session_id: "c5cfee93-5ee5-463c-b960-983e4227dd4d"
+started_at: "2026-08-17T12:39:36-07:00"
+session_type: "brownfield_adoption"
+prompt_library_commit: "478f5bfa971cc5223417bde492a8f1a0adcb3964"
+project_commit_at_start: "dacb78318aeb3ca4768819942884bb260ca032e4"
+
+prompts_used:
+  - phase: "brownfield_adoption"
+    agent_id: "brownfield-adoption-agent-v1.0"
+    prompt_file: "Standards/Agents/08_Brownfield_Adoption_Agent.md"
+    prompt_hash: "sha256:af6b14007e4eeab9e66431ade124696c171905a6be3914dd689dc6fa271d9d3d"
+    invoked_at: "2026-08-17T12:39:36-07:00"
+    completed_at: "2026-08-17T12:45:00-07:00"
+    outputs:
+      - artifact: "project.manifest.yaml"
+        artifact_hash: "90e8bdb87d5336f9c0b1601561dfa4242ad692c5b12e3692496db07577e56e3b"
+        commit: "pending"
+      - artifact: ".agent-ownership.yaml"
+        artifact_hash: "98bee7f42577ef112f78a8bfc009aa9721e8a9205ce38d3eb6a9a70e41afdcd0"
+        commit: "pending"
+      - artifact: "docs/PRD.md"
+        artifact_hash: "5182b996bdbd0e4992fdb10fd1aa4e0439567d75d6816459891f33d481154892"
+        commit: "pending"
+      - artifact: "docs/techstack_decision.md"
+        artifact_hash: "96ec690a6b748e4f48e97d8431c59d24094b5af008f5edc0e4755089df2da093"
+        commit: "pending"
+      - artifact: "DECISIONS.md"
+        artifact_hash: "ffd4e6c5cfcba8ae73fef3e5c4abb904e55689b5299b4b99c8df3a57992a5862"
+        commit: "pending"
+      - artifact: ".troubleshooting/common-failures.yaml"
+        artifact_hash: "e6c760b114bc6839eec3866858f1d6f212eb29e7a104a15eeafd94442c26af84"
+        commit: "pending"
+      - artifact: ".troubleshooting/diagnostic-playbook.md"
+        artifact_hash: "45d78585ee6f1ed3a637bb0d354a272e1d04200cd2f4e547d631abf79e646257"
+        commit: "pending"
+      - artifact: ".github/workflows/issue_screening.yml"
+        artifact_hash: "6860967c71ad2c3516abc26dab4dcf7c4ec41f2f41ea34b9ccf9457ace941627"
+        commit: "pending"
+    session_summary: |
+      Adopted existing project into multi-agent pipeline.
+      Project type iot (Ansible playbook run.yml, single system role, Raspberry Pi target).
+      16 artifacts attributed in ownership map, 11 role task files documented as
+      functional requirements, 9 GitHub labels created (18 total), issue screening
+      workflow installed, 1 troubleshooting pattern seeded from issue #1,
+      6 beads issues filed for follow-up work.
