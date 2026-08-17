@@ -1,9 +1,12 @@
-# Proposed canonical-doc updates (Phase 6d — awaiting user approval)
+# Proposed canonical-doc updates (Phase 6d)
 
-This session ran non-interactively, so the Phase 6d confirmation gate could not
-be exercised live. Nothing below has been applied. Each block is the exact edit
-proposed; approve/adjust and apply (tracked as beads issue
-Transparent_Bridge_Eth_to_Wifi doc-sync entries filed at session end).
+**Status: APPLIED 2026-08-17.** The user approved this doc sync ("Do the doc
+sync", follow-up session on 2026-08-17); all five blocks below were applied on
+branch feature/issue-2-inky-status-display and bead
+Transparent_Bridge_Eth_to_Wifi-wom was closed. The techstack edit was applied
+as an in-place replacement of the stale `inkywhatAP.yml` bullet rather than an
+addition, since that bullet named a deleted file. ADR-003 landed with status
+"accepted". This file remains as the record of what was proposed.
 
 ---
 

@@ -85,3 +85,30 @@ True L2 bridging is the project's sole bridging mechanism. The three dead L3-rel
 
 1. **Document dhcp-helper.yml as an optional mode** — Rejected: it was never wired into the playbook, its Device_Label_WP copy is broken, and no configuration selects it; documenting broken dead code as a feature would mislead downstream agents
 2. **Leave the files in place untouched** — Rejected: the adoption audit flagged them precisely because unreferenced task files erode trust in the role inventory
+
+---
+
+### ADR-003: inky-status Replaces the Device_Label Display Path; Per-App venvs over System pip
+
+**Date:** 2026-08-17
+**Status:** accepted
+**Deciders:** feature-development-agent-v1.0, CaptainMcCrank (approved doc sync 2026-08-17)
+
+#### Context
+
+The Device_Label_WifiAP display path installed Python deps with system-wide pip3, which fails under PEP 668 on Bookworm's externally-managed interpreter, and drove the interactive get.pimoroni.com script via `expect` with `ignore_errors: true`. A replacement was developed and hardware-verified in the FixingSDCard effort (GH issue #2, PR #3).
+
+#### Decision
+
+inky-status (venv with `--system-site-packages` over apt compiled deps, oneshot service + daily timer, stateless date-derived anti-ghosting rotation, AP-aware Wi-Fi band) is the sole e-paper display path. Python dependencies on the target are installed into per-app venvs, never with system-wide pip.
+
+#### Consequences
+
+- Legacy artifacts deleted from HEAD (recoverable at tag `pre-feature-issue-2`); playbook re-runs converge already-deployed devices
+- Display no longer lists per-client MACs or build info (bead Transparent_Bridge_Eth_to_Wifi-gvb tracks whether to restore them)
+- Boards without an ID EEPROM need `INKY_BOARD` named explicitly (`inky_board` var / `/etc/default/inky-status`)
+
+#### Alternatives Considered
+
+1. **Fix the legacy path in place** — Rejected: every dependency mechanism it used is broken or deprecated on current Raspberry Pi OS
+2. **Run both displays** — Rejected: two timers drawing to one panel overwrite each other

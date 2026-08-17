@@ -169,6 +169,10 @@ exact diffs staged in `proposed_doc_updates.md`:
 Filed as beads issue (doc-sync) at session close; `docs/feature_list.md` and
 `domain_knowledge/` files are absent (gap noted, not created per protocol).
 
+**Resolution:** the user approved the sync in the 2026-08-17 follow-up session;
+all five updates were applied (see `proposed_doc_updates.md` header) and bead
+-wom closed. Every Documentation Impact row is now resolved as updated or no-op.
+
 ## Rollback
 
 ```bash
