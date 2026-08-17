@@ -58,3 +58,30 @@ Adopt the project by adding pipeline metadata around the existing structure. Use
 
 1. **Restructure to match greenfield layout** — Rejected: breaks existing references (`root_playbook_dir` paths inside tasks), the documented build procedure, and developer muscle memory
 2. **Symlink compatibility layer** — Rejected: fragile, confusing, adds maintenance burden
+
+---
+
+### ADR-002: L2 Bridging Is the Sole Bridging Mechanism; L3 Relay Artifacts Retired
+
+**Date:** 2026-08-17
+**Status:** accepted
+**Deciders:** feature-development-agent-v1.0 (resolving bead Transparent_Bridge_Eth_to_Wifi-353, filed at adoption)
+
+#### Context
+
+The original transparent-bridge recipe used an L3 pseudo-bridge: parprouted for proxy-ARP plus dhcp-helper as a DHCP relay. Commit `44c2090` removed the parprouted task as "unneeded" after true L2 bridging landed (`bridge.yml`: `br0` via systemd-networkd with hostapd bound via `bridge=br0`), but three companion artifacts stayed behind unreferenced: `roles/system/tasks/dhcp-helper.yml` (never imported by `main.yml` in any commit), `etc/default/dhcp-helper` (referenced only by that orphaned task), and `usr/lib/systemd/system/parprouted.service` (referenced by nothing). The orphaned task also contained a copy of `Device_Label_WP.service` whose source file no longer exists in the repository, so the task would fail if ever imported.
+
+#### Decision
+
+True L2 bridging is the project's sole bridging mechanism. The three dead L3-relay artifacts are deleted from HEAD.
+
+#### Consequences
+
+- The role's task inventory matches what `main.yml` actually runs; no orphaned tasks remain
+- A future L3-relay mode (e.g., for adapters that cannot do bridged AP) must be rebuilt deliberately; the removed files are recoverable from git history (last present at commit `bef555e`)
+- `docs/PRD.md` FR-011/OQ-2 are resolved by this decision
+
+#### Alternatives Considered
+
+1. **Document dhcp-helper.yml as an optional mode** — Rejected: it was never wired into the playbook, its Device_Label_WP copy is broken, and no configuration selects it; documenting broken dead code as a feature would mislead downstream agents
+2. **Leave the files in place untouched** — Rejected: the adoption audit flagged them precisely because unreferenced task files erode trust in the role inventory

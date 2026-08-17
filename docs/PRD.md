@@ -33,7 +33,7 @@ One requirement per task file in `roles/system/tasks/`, in the order `main.yml` 
 | FR-008 | Transparent L2 bridge: `br0` via systemd-networkd with eth0 as member, hostapd bound to the bridge, dhcpcd denied on bridged interfaces | `roles/system/tasks/bridge.yml`, `etc/systemd/network/` | Implemented | ✅ Complete |
 | FR-009 | Device registration: version file (`/boot/device.ver`) stamping and registration service/timer for fleet inventory | `roles/system/tasks/device_registration.yml`, `bin/register.sh` | Implemented | ✅ Complete |
 | FR-010 | Final cleanup: locale pruning for 8 GB cards, restore standard apt sources, filesystem auto-resize on first boot, persist nftables rules | `roles/system/tasks/final_cleanup.yml` | Implemented | ✅ Complete |
-| FR-011 | DHCP relay via dhcp-helper | `roles/system/tasks/dhcp-helper.yml` | Orphaned | ⚠️ Not imported by `main.yml` (see OQ-2) |
+| FR-011 | DHCP relay via dhcp-helper | removed (was `roles/system/tasks/dhcp-helper.yml`) | Retired | 🗑️ Dead code removed per ADR-002 (resolved OQ-2) |
 
 ---
 
@@ -59,7 +59,7 @@ One requirement per task file in `roles/system/tasks/`, in the order `main.yml` 
 ## Open Questions
 
 - **OQ-1:** `roles/system/tasks/main.yml:6` imports `inkywhat.yml`, but only `inkywhatAP.yml` exists (renamed in commit `4d7a3c5`/`44c2090`). The playbook as committed should fail at parse time. Has the current HEAD ever been run end-to-end? Filed as a beads issue at adoption.
-- **OQ-2:** `roles/system/tasks/dhcp-helper.yml` exists but is not imported by `main.yml`. Is DHCP relay dead code (superseded by true L2 bridging) or an intended optional mode? Filed as a beads issue at adoption.
+- **OQ-2 (resolved 2026-08-17):** `roles/system/tasks/dhcp-helper.yml` was dead code from the retired parprouted-era L3 relay approach. Removed along with `etc/default/dhcp-helper` and `usr/lib/systemd/system/parprouted.service` per `DECISIONS.md` ADR-002.
 - **OQ-3:** `roles/system/defaults/main.yml` pins `ansible_python_interpreter: /usr/bin/python3.9`, but Bookworm ships Python 3.11. Does the Bookworm support commit (`284b786`) actually work against a stock Bookworm image?
 - **OQ-4:** Default credentials (`ssh_password_pi`, `wifi_password` in role defaults; login password in `Readme.md`) are committed in plaintext. Filed as a beads issue at adoption.
 - **OQ-5:** No tests exist anywhere in the repository. The pipeline's `test_development` phase is marked incomplete in `project.manifest.yaml`.
