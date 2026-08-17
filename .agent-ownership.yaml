@@ -92,3 +92,18 @@ artifacts:
     owner: "brownfield-adoption-agent-v1.0"
     last_modified: "2026-08-17T12:39:36-07:00"
     commit: null
+
+  run-tests.sh:
+    owner: "feature-development-agent-v1.0"
+    last_modified: "2026-08-17T13:10:00-07:00"
+    commit: null
+
+  tests/:
+    owner: "feature-development-agent-v1.0"
+    last_modified: "2026-08-17T13:10:00-07:00"
+    commit: null
+
+  docs/test_catalog/:
+    owner: "feature-development-agent-v1.0"
+    last_modified: "2026-08-17T13:10:00-07:00"
+    commit: null

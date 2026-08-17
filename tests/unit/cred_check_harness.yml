@@ -1,0 +1,13 @@
+---
+# Harness for exercising roles/system/tasks/credential_checks.yml against
+# localhost with controlled environment variables. Driven by
+# tests/unit/credential_checks_test.sh — not meant to run standalone.
+- hosts: localhost
+  gather_facts: no
+  vars:
+    ansible_python_interpreter: "{{ ansible_playbook_python }}"
+    # Mirror the lookups in roles/system/defaults/main.yml
+    ssh_password_pi: "{{ lookup('ansible.builtin.env', 'BRIDGE_PI_PASSWORD') }}"
+    wifi_password: "{{ lookup('ansible.builtin.env', 'BRIDGE_WIFI_PASSWORD') }}"
+  tasks:
+    - import_tasks: "{{ playbook_dir }}/../../roles/system/tasks/credential_checks.yml"

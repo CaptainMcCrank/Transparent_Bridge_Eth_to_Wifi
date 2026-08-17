@@ -24,7 +24,7 @@ repository:
 # Maps actual project paths — agents MUST use these instead of pipeline defaults.
 project_layout:
   # Shared (all project types)
-  tests_dir: null                      # No tests exist yet; see beads issue filed at adoption
+  tests_dir: "tests/"                  # Created for bead -s9t; entrypoint: ./run-tests.sh
   docs_dir: "docs/"                    # Created at adoption; Readme.md at repo root predates it
   test_catalog: "docs/test_catalog/"   # Created empty at adoption
   knowledge_base: ".AgentLessonsLearned/"
@@ -125,8 +125,8 @@ phases:
     completed_at: "2023-10-09T13:24:41-07:00"
     completed_by: "CaptainMcCrank"
   test_development:
-    completed_at: null                 # No tests were ever created; see beads issue filed at adoption
-    completed_by: null
+    completed_at: "2026-08-17T13:10:00-07:00"   # Bead -s9t: run-tests.sh + smoke/unit suites + catalog
+    completed_by: "feature-development-agent-v1.0"
   build_automation:
     completed_at: "2023-10-09T13:24:41-07:00"
     completed_by: "CaptainMcCrank"
