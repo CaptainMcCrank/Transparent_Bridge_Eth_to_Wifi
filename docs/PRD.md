@@ -43,7 +43,7 @@ One requirement per task file in `roles/system/tasks/`, in the order `main.yml` 
 - **NFR-002 — Small storage footprint:** the image must fit an 8 GB class 10 SD card; `final_cleanup.yml` prunes locale data explicitly for this.
 - **NFR-003 — WiFi security:** WPA2-PSK with CCMP pairwise cipher (`etc/hostapd/WifiRepeaterHostAPD.conf`, hardened in commit `ba57015`).
 - **NFR-004 — Reproducible builds:** provisioning runs from a Docker-hosted Ansible container against a freshly imaged Pi (`Readme.md` Setup instructions).
-- **NFR-005 — Observability at a glance:** device state (hostname, IP, AP SSID, attached-client count, uptime) is readable from the physical e-paper display without logging in. The pre-GH#2 display also listed per-client MAC addresses and build info; whether to restore those as an extra band is tracked as bead Transparent_Bridge_Eth_to_Wifi-gvb.
+- **NFR-005 — Observability at a glance:** device state (hostname, IP, AP SSID, attached-client count, uptime) is readable from the physical e-paper display without logging in. The pre-GH#2 display also listed per-client MAC addresses and build info; the user decided on 2026-08-17 that a station count suffices and per-client listing is not needed (bead Transparent_Bridge_Eth_to_Wifi-gvb, closed).
 
 ---
 

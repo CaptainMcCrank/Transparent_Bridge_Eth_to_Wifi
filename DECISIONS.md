@@ -105,7 +105,7 @@ inky-status (venv with `--system-site-packages` over apt compiled deps, oneshot 
 #### Consequences
 
 - Legacy artifacts deleted from HEAD (recoverable at tag `pre-feature-issue-2`); playbook re-runs converge already-deployed devices
-- Display no longer lists per-client MACs or build info (bead Transparent_Bridge_Eth_to_Wifi-gvb tracks whether to restore them)
+- Display no longer lists per-client MACs or build info (user confirmed 2026-08-17 that the AP band's station count suffices; bead Transparent_Bridge_Eth_to_Wifi-gvb closed without implementation)
 - Boards without an ID EEPROM need `INKY_BOARD` named explicitly (`inky_board` var / `/etc/default/inky-status`)
 
 #### Alternatives Considered
