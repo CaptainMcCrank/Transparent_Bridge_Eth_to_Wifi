@@ -13,8 +13,7 @@ This Recipe generates a wifi device that bridges an ethernet network and exposes
 
 ## Build Overview
 
-login: pi
-pwd: ChangeDefaultPWD3331333
+login: pi (password is whatever you export as `BRIDGE_PI_PASSWORD` at build time — see Build credentials below)
 
 This build bridges your ethernet network and exposes it via wifi.  This means a few things:
 * Your existing dhcp solution can be extended to your wifi network.
@@ -36,6 +35,17 @@ It uses eth for internet access and the wifi interface vends network to anything
 | [bridge networking](https://www.raspberrypi.com/documentation/computers/configuration.html#setting-up-a-bridged-wireless-access-point) | The Raspberry Pi can be used as a bridged wireless access point within an existing Ethernet network. This will extend the network to wireless computers and devices.) |
 
 
+
+## Build credentials
+
+The playbook reads all credentials from environment variables — nothing secret is committed to this repository. Before running `ansible-playbook run.yml`, export these in your Ansible build container:
+
+| Variable | Purpose |
+| ----------- | ----------- |
+| `BRIDGE_PI_PASSWORD` | Login password set for the `pi` user on the built device |
+| `BRIDGE_WIFI_PASSWORD` | WPA2 passphrase for the access point (must be 8-63 characters) |
+
+The playbook fails immediately with a clear message if either is missing.
 
 ## Setup instructions
 * Follow instructions for building an image using ansible containers.

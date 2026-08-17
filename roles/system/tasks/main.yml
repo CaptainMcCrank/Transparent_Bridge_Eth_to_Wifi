@@ -1,4 +1,5 @@
 ---
+- import_tasks: credential_checks.yml
 - import_tasks: essential.yml
 - import_tasks: AWUS036ACH_wifi_adapter.yml
   when: wifi_interface == "wlan1"

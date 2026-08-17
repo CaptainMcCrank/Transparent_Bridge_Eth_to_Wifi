@@ -9,8 +9,12 @@ int_count: "{{ ansible_interfaces | count }}"
 ansible_python_interpreter: "/usr/bin/python3.9"
 Target_Hostname: "WifiAP"
 docker_host: "{{ lookup('ansible.builtin.env', 'DOCKER_HOST') }}"
-ssh_password_pi: "Passw@rd"
-wifi_password: "agoodsecretpassword" 
+# Credentials come from the build environment; never commit real values here.
+# Set BRIDGE_PI_PASSWORD and BRIDGE_WIFI_PASSWORD in the Ansible build
+# container before running the playbook. credential_checks.yml fails the run
+# early if either is missing or the wifi passphrase is not 8-63 chars.
+ssh_password_pi: "{{ lookup('ansible.builtin.env', 'BRIDGE_PI_PASSWORD') }}"
+wifi_password: "{{ lookup('ansible.builtin.env', 'BRIDGE_WIFI_PASSWORD') }}"
 wifi_network_ssid: "workshop"
 hostapd_file: "WifiRepeaterHostAPD.conf"
 wifi_interface: "wlan0"
