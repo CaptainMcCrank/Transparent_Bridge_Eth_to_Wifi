@@ -24,3 +24,63 @@ patterns:
     source: "issue #1 (Wifi not working. Hardware failure condition, opened 2023-10-07, still open at adoption)"
     added_by: "brownfield-adoption-agent-v1.0"
     added_date: "2026-08-17T12:39:36-07:00"
+
+  - id: "inky-no-eeprom-001"
+    error_signature: |
+      RuntimeError: No EEPROM detected! You must manually initialise your Inky board.
+    symptoms:
+      - "inky-status.service fails; journalctl shows 'could not open Inky display: No EEPROM detected'"
+      - "i2cdetect -y 1 shows no device at 0x50"
+    root_causes:
+      - cause: "Board predates the Pimoroni ID EEPROM, so inky.auto() cannot probe it"
+        likelihood: high
+        diagnostic_steps:
+          - "ls /dev/i2c-1 (must exist; if missing see i2c-dev cause below)"
+          - "sudo i2cdetect -y 1 and look for 0x50"
+        fix: "Name the board explicitly: INKY_BOARD=what (or phat/phat1608) in /etc/default/inky-status, or inky_board var in roles/system/defaults/main.yml"
+      - cause: "i2c-dev module not loaded, so /dev/i2c-* never appears even with dtparam=i2c_arm=on"
+        likelihood: medium
+        diagnostic_steps:
+          - "lsmod | grep i2c_dev"
+          - "cat /etc/modules-load.d/i2c-dev.conf"
+        fix: "inky_status.yml persists the module via /etc/modules-load.d/i2c-dev.conf; modprobe i2c-dev for the running system"
+    related_issues:
+      - 2
+    source: "FixingSDCard inky-status Agent_README Gotcha 2, verified on hardware 2026-08"
+    added_by: "feature-development-agent-v1.0"
+    added_date: "2026-08-17T15:00:00-07:00"
+
+  - id: "inky-gpio8-claimed-001"
+    error_signature: |
+      Woah there, some pins we need are in use!
+      Chip Select: (line 8, GPIO8) currently claimed by spi0 CS0
+    symptoms:
+      - "inky-status.service fails at panel open; journalctl shows the 'pins in use' message"
+    root_causes:
+      - cause: "Kernel SPI driver holds GPIO8, but the inky library drives Chip Select itself via gpiod"
+        likelihood: high
+        diagnostic_steps:
+          - "grep spi0-0cs /boot/firmware/config.txt"
+        fix: "dtoverlay=spi0-0cs in boot config (inky_status.yml adds it); reboot required — /dev/spidev0.0 still appears afterwards"
+    related_issues:
+      - 2
+    source: "FixingSDCard inky-status Agent_README Gotcha 3, verified on hardware 2026-08"
+    added_by: "feature-development-agent-v1.0"
+    added_date: "2026-08-17T15:00:00-07:00"
+
+  - id: "pip-spidev-build-fail-001"
+    error_signature: |
+      fatal error: Python.h: No such file or directory
+    symptoms:
+      - "pip install of a compiled dep (spidev and friends) fails building a wheel, or succeeds after minutes and later fails to import"
+    root_causes:
+      - cause: "Compiled Python dep being built by pip instead of taken from apt; spidev ships no aarch64 wheel"
+        likelihood: high
+        diagnostic_steps:
+          - "check whether the failing package has an apt equivalent (python3-spidev, python3-numpy, python3-pil, python3-smbus2, python3-libgpiod)"
+        fix: "Install the apt package and create the venv with --system-site-packages so it is visible (the inky_status.yml pattern, ADR-003); never pip-build compiled deps on the Pi"
+    related_issues:
+      - 2
+    source: "FixingSDCard inky-status Agent_README Gotcha 1, verified on hardware 2026-08"
+    added_by: "feature-development-agent-v1.0"
+    added_date: "2026-08-17T15:00:00-07:00"

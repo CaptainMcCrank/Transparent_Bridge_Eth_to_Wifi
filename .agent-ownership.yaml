@@ -107,3 +107,28 @@ artifacts:
     owner: "feature-development-agent-v1.0"
     last_modified: "2026-08-17T13:10:00-07:00"
     commit: null
+
+  opt/inky-status/:
+    owner: "feature-development-agent-v1.0"
+    last_modified: "2026-08-17T14:30:00-07:00"
+    commit: null
+
+  roles/system/tasks/inky_status.yml:
+    owner: "feature-development-agent-v1.0"
+    last_modified: "2026-08-17T14:30:00-07:00"
+    commit: null
+
+  etc/systemd/system/inky-status.service:
+    owner: "feature-development-agent-v1.0"
+    last_modified: "2026-08-17T14:30:00-07:00"
+    commit: null
+
+  etc/systemd/system/inky-status.timer:
+    owner: "feature-development-agent-v1.0"
+    last_modified: "2026-08-17T14:30:00-07:00"
+    commit: null
+
+  .FeatureDevelopment/2026-08-17_inky-status-display/:
+    owner: "feature-development-agent-v1.0"
+    last_modified: "2026-08-17T14:30:00-07:00"
+    commit: null

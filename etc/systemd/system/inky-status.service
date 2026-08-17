@@ -1,0 +1,13 @@
+[Unit]
+Description=Render host, Wi-Fi and uptime status to the Inky pHAT
+# The panel shows an IP and SSID, so wait until there is something to show.
+Wants=network-online.target
+After=network-online.target NetworkManager-wait-online.service
+
+[Service]
+Type=oneshot
+# Set INKY_BOARD / INKY_COLOUR here for boards with no ID EEPROM.
+EnvironmentFile=-/etc/default/inky-status
+ExecStart=/opt/inky-status/venv/bin/python /opt/inky-status/inky_status.py
+# A full e-ink refresh on a Pi 3 takes the better part of 30 seconds.
+TimeoutStartSec=180

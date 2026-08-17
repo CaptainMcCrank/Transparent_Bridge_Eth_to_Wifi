@@ -41,8 +41,18 @@ check "wifi passphrase is not the ChangeMe placeholder" \
 check "web server responds on localhost" \
   bash -c 'curl -fs --max-time 5 -o /dev/null http://localhost/ || curl -fsk --max-time 5 -o /dev/null https://localhost/'
 
-# TC-S-005: device label display timer installed (enabled even without inky hardware attached)
-check "Device_Label_WifiAP.timer enabled" systemctl is-enabled --quiet Device_Label_WifiAP.timer
+# TC-S-005: status display timer installed (enabled even without inky hardware attached)
+check "inky-status.timer enabled"        systemctl is-enabled --quiet inky-status.timer
+check "legacy Device_Label_WifiAP.timer gone" \
+  bash -c '! systemctl is-enabled --quiet Device_Label_WifiAP.timer'
+
+# TC-S-007: status display runtime intact (venv imports resolve, fonts present)
+check "inky-status venv imports resolve" \
+  /opt/inky-status/venv/bin/python -c "import inky, PIL, numpy, spidev, gpiod"
+check "a truetype font is installed" \
+  test -f /usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf
+check "inky-status renders headlessly" \
+  /opt/inky-status/venv/bin/python /opt/inky-status/inky_status.py --out /tmp/inky_smoke.png
 
 echo "RESULT pass=$PASS fail=$FAIL skip=$SKIP"
 [[ "$FAIL" -eq 0 ]]

@@ -35,7 +35,7 @@ Discovered in `roles/system/tasks/*.yml` (apt unless noted):
 - **hostapd.yml:** hostapd
 - **dhcp-helper.yml:** dhcp-helper (orphaned task)
 - **lighttpd.yml / webservercontent.yml:** lighttpd
-- **inkywhatAP.yml:** python3-qrcode, python3-icalendar; pip3: inky, netifaces, font-source-serif-pro (fonts)
+- **inky_status.yml (replaced inkywhatAP.yml, GH #2):** python3-venv, python3-dev, python3-numpy, python3-pil, python3-spidev, python3-smbus2, python3-libgpiod, fonts-dejavu-core, iw, i2c-tools; pip (into `/opt/inky-status/venv` only): inky. The venv is created with `--system-site-packages` so compiled deps come from apt (`python3-spidev` has no aarch64 wheel); this is the project's pattern for Python deps on Bookworm's externally-managed interpreter — never system-wide pip (ADR-003).
 - **AWUS036ACH_wifi_adapter.yml:** raspberrypi-kernel-headers, build prerequisites, rpi-source
 - **essential.yml / final_cleanup.yml:** full package upgrade; gparted, vim, lightdm, ncdu, lshw
 

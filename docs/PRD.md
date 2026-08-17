@@ -26,7 +26,7 @@ One requirement per task file in `roles/system/tasks/`, in the order `main.yml` 
 | FR-001 | Base system preparation: disable IPv6, disable wlan0 power-save, configure apt to use the build host's proxies, update packages | `roles/system/tasks/essential.yml` | Implemented | ✅ Complete |
 | FR-002 | Optional Alfa AWUS036ACH (RTL8812AU) USB WiFi adapter driver build, applied when `wifi_interface == "wlan1"` | `roles/system/tasks/AWUS036ACH_wifi_adapter.yml` | Implemented | ✅ Complete |
 | FR-003 | WiFi access point via hostapd with templated SSID, passphrase, interface, and WPA2/CCMP settings | `roles/system/tasks/hostapd.yml`, `etc/hostapd/WifiRepeaterHostAPD.conf` | Implemented | ✅ Complete |
-| FR-004 | E-paper device label: Inky wHAT display service and timer showing build info and up to 14 attached client MACs | `roles/system/tasks/inkywhatAP.yml`, `usr/local/bin/Device_Label_WifiAP.py` | Implemented | ⚠️ Broken import (see OQ-1) |
+| FR-004 | E-paper status display: inky-status service + daily timer showing hostname/IPv4, AP SSID + station count (client SSID + signal when not an AP), and uptime, with daily band rotation against e-ink ghosting | `roles/system/tasks/inky_status.yml`, `opt/inky-status/inky_status.py` | Implemented (GH #2) | ✅ Complete |
 | FR-005 | lighttpd web server with SSL and custom error pages | `roles/system/tasks/lighttpd.yml`, `etc/lighttpd/lighttpd.conf` | Implemented | ✅ Complete |
 | FR-006 | mDNS/DNS-SD service discovery via avahi | `roles/system/tasks/avahi.yml`, `etc/avahi/avahi-daemon.conf` | Implemented | ✅ Complete |
 | FR-007 | Static web content (HTML5UP Dopetrope theme status page) deployed to `/var/www/html` | `roles/system/tasks/webservercontent.yml`, `var/www/html/` | Implemented | ✅ Complete |
@@ -43,7 +43,7 @@ One requirement per task file in `roles/system/tasks/`, in the order `main.yml` 
 - **NFR-002 — Small storage footprint:** the image must fit an 8 GB class 10 SD card; `final_cleanup.yml` prunes locale data explicitly for this.
 - **NFR-003 — WiFi security:** WPA2-PSK with CCMP pairwise cipher (`etc/hostapd/WifiRepeaterHostAPD.conf`, hardened in commit `ba57015`).
 - **NFR-004 — Reproducible builds:** provisioning runs from a Docker-hosted Ansible container against a freshly imaged Pi (`Readme.md` Setup instructions).
-- **NFR-005 — Observability at a glance:** device state (build version, attached clients) is readable from the physical e-paper display without logging in.
+- **NFR-005 — Observability at a glance:** device state (hostname, IP, AP SSID, attached-client count, uptime) is readable from the physical e-paper display without logging in. The pre-GH#2 display also listed per-client MAC addresses and build info; the user decided on 2026-08-17 that a station count suffices and per-client listing is not needed (bead Transparent_Bridge_Eth_to_Wifi-gvb, closed).
 
 ---
 

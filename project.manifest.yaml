@@ -43,6 +43,7 @@ project_layout:
     - "var/"                           # Target /var/www/html web content
     - "pi/"                            # Target /home/pi user config
     - "bin/"                           # Build-side helper scripts (register.sh)
+    - "opt/"                           # Target /opt app dirs (inky-status display, GH #2)
 
 prompt_provenance:
   library_repository: "https://github.com/CaptainMcCrank/LLM_Pre-Prompts"
@@ -60,6 +61,10 @@ agents:
     role: adoption
     first_contribution: "2026-08-17T12:39:36-07:00"
     last_contribution: "2026-08-17T12:39:36-07:00"
+  - id: "feature-development-agent-v1.0"   # prompt 09 names itself feature-dev-agent-v1.0; repo records use this longer form consistently
+    role: feature_development
+    first_contribution: "2026-08-17T13:10:00-07:00"
+    last_contribution: "2026-08-17T14:30:00-07:00"
 
 status:
   current_phase: "stable"
