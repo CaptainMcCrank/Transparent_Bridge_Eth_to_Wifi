@@ -6,7 +6,9 @@ temp_folder: /tmp
 root_playbook_dir: /home/pi/Playbooks/Transparent_Bridge_Eth_to_Wifi
 os_info_path: /etc/os-release
 int_count: "{{ ansible_interfaces | count }}"
-ansible_python_interpreter: "/usr/bin/python3.9"
+# Use the distro's python3 symlink so the play works across Raspberry Pi OS
+# releases (Bullseye ships 3.9, Bookworm ships 3.11) without re-pinning.
+ansible_python_interpreter: "/usr/bin/python3"
 Target_Hostname: "WifiAP"
 docker_host: "{{ lookup('ansible.builtin.env', 'DOCKER_HOST') }}"
 # Credentials come from the build environment; never commit real values here.
