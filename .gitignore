@@ -1,2 +1,12 @@
 # Ignore Mac system files
 .DS_store
+
+# Added by init-project.sh
+.env
+LLM_Pre-prompts/
+SandboxedClaudeCode/
+
+# Beads / Dolt files (added by bd init)
+.dolt/
+*.db
+.beads-credential-key

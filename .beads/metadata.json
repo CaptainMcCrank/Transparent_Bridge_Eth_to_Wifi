@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "Transparent_Bridge_Eth_to_Wifi",
+  "project_id": "666756c5-3b09-4cbc-90c1-8f2da3b3942e"
+}
